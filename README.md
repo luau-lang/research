@@ -18,7 +18,7 @@ In HATRA 2021, we presented The Goals Of The Luau Type System, describing the hu
 
 [Paper](hatra23/hatra23.pdf), [Slides](hatra23/talk.pdf)
 
-'24: Towards an Unsound But Complete Type System
+## Incorrectness'24: Towards an Unsound But Complete Type System
 
 Authors: Lily Brown, Andy Friesen, Alan Jeffrey, Vighnesh Vijay
 
