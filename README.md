@@ -16,7 +16,7 @@ Authors: Lily Brown, Andy Friesen, Alan Jeffrey
 
 In HATRA 2021, we presented The Goals Of The Luau Type System, describing the human factors of a type system for a language with a heterogeneous developer community. In this extended abstract we provide a progress report, focusing on the unexpected aspects: semantic subtyping and type error suppression.
 
-[Paper](hatra23/hatra23.pdf)
+[Paper](hatra23/hatra23.pdf), [Slides](hatra23/talk.pdf)
 
 ## Incorrectness'24: Towards an Unsound But Complete Type System
 
