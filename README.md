@@ -8,7 +8,7 @@ Authors: Lily Brown, Andy Friesen, Alan Jeffrey
 
 Luau is the scripting language that powers user-generated experiences on the Roblox platform. It is a statically- typed language, based on the dynamically-typed Lua language, with type inference. These types are used for providing editor assistance in Roblox Studio, the IDE for authoring Roblox experiences. Due to Roblox’s uniquely heterogeneous developer community, Luau must operate in a somewhat different fashion than a traditional statically-typed language. In this paper, we describe some of the goals of the Luau type system, focusing on where the goals differ from those of other type systems.
 
-[Paper](hatra21/hatra21.pdf), [Slides](hatra21/talk.pdf)
+[Paper](hatra21/hatra21.pdf), [Slides](hatra21/talk.pdf), [Video](https://www.youtube.com/watch?v=nziiBPtB0eQ)
 
 ## HATRA'23: Goals of the Luau Type System, Two Years On
 
