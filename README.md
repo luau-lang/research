@@ -1,6 +1,6 @@
 # Luau Research Papers
 
-[Bibiography](luau.bib), [Repo](https://github.com/luau-lang/research)
+[Bibliography](luau.bib), [Repo](https://github.com/luau-lang/research)
 
 ## HATRA'21: Position Paper: Goals of the Luau Type System
 
@@ -22,6 +22,6 @@ In HATRA 2021, we presented The Goals Of The Luau Type System, describing the hu
 
 Authors: Lily Brown, Andy Friesen, Alan Jeffrey, Vighnesh Vijay
 
-In HATRA 2021, we presented The Goals Of The Luau Type System, describing the human factors of a type system for a language with a heterogeneous developer community. One of the goals was the design of type system for bug detection, where we have high confidence that type errors identify gen- uine software defects, and that false positives are minimized. Such a type system is, by necessity, unsound, but we can ask instead that it is complete. This paper presents a work- in-progress report on the design and implementation of the new unsound type system for Luau.
+In HATRA 2021, we presented The Goals Of The Luau Type System, describing the human factors of a type system for a language with a heterogeneous developer community. One of the goals was the design of type system for bug detection, where we have high confidence that type errors identify genuine software defects, and that false positives are minimized. Such a type system is, by necessity, unsound, but we can ask instead that it is complete. This paper presents a work-in-progress report on the design and implementation of the new unsound type system for Luau.
 
 [Paper](incorrectness24/incorrectness24.pdf)
