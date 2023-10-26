@@ -1,3 +1,4 @@
+% \documentclass[acmsmall,review,screen,anonymous]{acmart}
 \documentclass[acmsmall,review,screen]{acmart}
 
 \acmYear{2025}
@@ -9,11 +10,13 @@
 \acmMonth{1}
 
 \expandafter\def\csname @copyrightpermission\endcsname{\raisebox{-1ex}{\includegraphics[height=3.5ex]{cc-by}} This work is licensed under a Creative Commons Attribution 4.0 International License.}
-\expandafter\def\csname @copyrightowner\endcsname{Roblox.}
+\expandafter\def\csname @copyrightowner\endcsname{\anon{Roblox}.}
 
 \newcommand{\ANY}{\mathtt{any}}
 \newcommand{\ERROR}{\mathtt{error}}
 \newcommand{\NUMBER}{\mathtt{number}}
+\newcommand{\WARN}{\mathsf{Warn}}
+\newcommand{\compat}{\sim}
 
 \begin{document}
 
@@ -31,7 +34,26 @@
 }
 
 \begin{abstract}
-  TODO
+  This paper presents the view of gradual typing adopted by the
+  \anon{Luau} programming language. Prior work on gradual typing has
+  been based on \emph{type compatibility}, that is a relation on types
+  $T \compat U$ given by contextually closing $T \compat \ANY \compat
+  U$.  Type systems based on type compatibility use $\compat$ rather
+  than type equivalence (or a similar presentation for languages with
+  subtyping). We take a different tack, which is to view type warnings
+  \emph{constructively} as a proof object $\WARN(\Gamma \vdash M : T)$
+  saying that the type derivation $\Gamma \vdash M : T$ should
+  generate a warning. Viewing type warnings constructively allows us
+  to talk about \emph{error suppression}, for example the $\ANY$ type
+  is error suppressing, and so this type system is gradual in the
+  sense that developers can explicitly annotate terms with the $\ANY$
+  type to switch off type warnings. This system has the usual ``well-typed
+  programs don't go wrong'' result for program which do not have
+  explicit type annotations with error-suppressing types, except this
+  property can now be stated as the presence of $\WARN(\Gamma \vdash M
+  : T)$ rather than the absence of a run-time error. This system has
+  been deployed as part of the \anon{Luau} programming language, used
+  by \anon{millions of users of Roblox Studio}.
 \end{abstract}
 
 \begin{CCSXML}
