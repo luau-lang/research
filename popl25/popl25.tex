@@ -12,10 +12,12 @@
 \expandafter\def\csname @copyrightpermission\endcsname{\raisebox{-1ex}{\includegraphics[height=3.5ex]{cc-by}} This work is licensed under a Creative Commons Attribution 4.0 International License.}
 \expandafter\def\csname @copyrightowner\endcsname{\anon{Roblox}.}
 
+\newcommand{\infer}[2]{\frac{\displaystyle\begin{array}{@{}l@{}}#1\end{array}}{\displaystyle#2}}
 \newcommand{\ANY}{\mathtt{any}}
 \newcommand{\ERROR}{\mathtt{error}}
 \newcommand{\NUMBER}{\mathtt{number}}
 \newcommand{\WARN}{\mathsf{Warn}}
+\newcommand{\fun}{\mathbin{\rightarrow}}
 \newcommand{\compat}{\sim}
 
 \begin{document}
@@ -71,7 +73,64 @@
 
 \section{Introduction}
 
-TODO
+The aim of \emph{gradual
+typing}~\cite{ST06:GradualTyping,ST07:GradualTyping} is to allow a
+code base to migrate from being untyped to being typed.  This is
+achieved by introducing a type $\ANY$ (also called $?$ or $*$) which
+is used as the type of a expression which is not subject to type
+checking. For example, in \anon{Luau}, a variable can be declared as
+having type $\ANY$, which is not subject to type checking:
+\begin{verbatim}
+  local x : any = "hi"
+  print(math.abs(x))
+\end{verbatim}
+This program generates a run-time error, but because \verb|x| is
+declared has having type $\ANY$, no type error is generated.
+Similarly, any expression can be cast to having type $\ANY$, which is
+not subject to type checking:
+\begin{verbatim}
+  print(math.abs("hi" :: any))
+\end{verbatim}
+Again, this program generates a run-time error, but because \verb|"hi"| is
+cast to  having type $\ANY$, no type error is generated.
+
+Prior work on gradual typing has been based on \emph{type
+compatibility}, that is a relation on types $T \compat U$ given by
+contextually closing $T \compat \ANY \compat U$.  Type systems based
+on type compatibility use $\compat$ rather than type equivalence (or a
+similar presentation for languages with subtyping).
+
+For example, the type rules for function application
+in~\cite{ST06:GradualTyping} are:
+\[
+    \infer{
+      \Gamma \vdash M : \ANY \\
+      \Gamma \vdash N : U
+    }{
+      \Gamma \vdash M(N) : \ANY
+    }
+\quad
+    \infer{
+      \Gamma \vdash M : (S \fun T) \\
+      \Gamma \vdash N : U \\
+      S \compat U
+    }{
+      \Gamma \vdash M(N) : T
+    }
+\]
+which requires that the argument type is \emph{compatible} with
+(rather than equal to) to the function source type.
+For example:
+\[
+    \infer{
+      \Gamma \vdash \mathtt{math.abs} : (\NUMBER \fun \NUMBER) \\
+      \Gamma \vdash x : \ANY \\
+      \NUMBER \compat \ANY
+    }{
+      \Gamma \vdash \mathtt{math.abs}(x) : \NUMBER
+    }
+\]
+
 
 \section{Further work}
 
