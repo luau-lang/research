@@ -16,6 +16,7 @@
 \newcommand{\ANY}{\mathtt{any}}
 \newcommand{\ERROR}{\mathtt{error}}
 \newcommand{\NUMBER}{\mathtt{number}}
+\newcommand{\STRING}{\mathtt{string}}
 \newcommand{\WARN}{\mathsf{Warn}}
 \newcommand{\fun}{\mathbin{\rightarrow}}
 \newcommand{\compat}{\sim}
@@ -109,7 +110,8 @@ in~\cite{ST06:GradualTyping} are:
     }{
       \Gamma \vdash M(N) : \ANY
     }
-\quad
+    (\textsc{GApp}1)
+\qquad
     \infer{
       \Gamma \vdash M : (S \fun T) \\
       \Gamma \vdash N : U \\
@@ -117,6 +119,7 @@ in~\cite{ST06:GradualTyping} are:
     }{
       \Gamma \vdash M(N) : T
     }
+    (\textsc{GApp}2)
 \]
 which requires that the argument type is \emph{compatible} with
 (rather than equal to) to the function source type.
@@ -130,6 +133,50 @@ For example:
       \Gamma \vdash \mathtt{math.abs}(x) : \NUMBER
     }
 \]
+The problem we discovered in implementing gradual typing on top of type
+compatibility is that it is a source of subtle bug, because the type
+system is very sensitive as to when type equality is used rather than
+type compatibility. For example comparing two type rules:
+\[
+    \infer{
+      \Gamma \vdash M : F \\
+      \Gamma \vdash N : U \\
+      F = (S \fun T) \\
+      S \compat U
+    }{
+      \Gamma \vdash M(N) : T
+    }
+    (\textsc{GApp}2')
+ \qquad
+    \infer{
+      \Gamma \vdash M : F \\
+      \Gamma \vdash N : U \\
+      F \compat (S \fun T) \\
+      S \compat U
+    }{
+      \Gamma \vdash M(N) : T
+    }
+    (\textsc{GApp}2'')
+\]
+These rules only differ in whether they use type compatibility
+rater than equality, but they have very different semantics. Rule
+$\textsc{GApp}2'$ is the same as $\textsc{GApp}2'$ (and so is sound)
+but using $\textsc{GApp}2''$ we can derive:
+\[
+    \infer{
+      \Gamma \vdash \mathtt{math.abs} : (\NUMBER \fun \NUMBER) \\
+      \Gamma \vdash x : \STRING \\
+      (\NUMBER \fun \NUMBER) \compat (\ANY \fun \NUMBER) \\
+      \ANY \compat \STRING \\
+    }{
+      \Gamma \vdash \mathtt{math.abs}(x) : \NUMBER
+    }
+\]
+which is unsound. Problems like this come down eventually to the fact
+that $\compat$ is not transitive, and in the presence of other
+features such as unification and subtyping gave rise to subtle bugs
+(for example code that assumed that unification solved for type
+equality rather than compatibility).
 
 
 \section{Further work}
