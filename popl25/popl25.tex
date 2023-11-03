@@ -19,9 +19,15 @@
 \newcommand{\NUMBER}{\mathtt{number}}
 \newcommand{\STRING}{\mathtt{string}}
 \newcommand{\WARN}{\mathsf{Warn}}
+\newcommand{\RUNTIMEERR}{\mathsf{RunTimeErr}}
+\newcommand{\APPLY}{\mathsf{apply}}
+\newcommand{\APP}{\mathsf{app}}
+\newcommand{\SRC}{\mathsf{src}}
+\newcommand{\TYPEOF}{\mathsf{typeof}}
 \newcommand{\UNION}{\mathbin{\mathtt{\char`\|}}}
 \newcommand{\fun}{\mathbin{\rightarrow}}
 \newcommand{\compat}{\sim}
+\newcommand{\st}{\mathbin.}
 
 \begin{document}
 
@@ -222,12 +228,6 @@ are:
 Since $\NUMBER \UNION \ERROR$ is an error suppressing type,
 \verb|string.lower(y)| will not report a type error.
 
-The existence of $\ERROR$ explains why \anon{Luau}, in common with
-TypeScript~\cite{TypeScript}, has both an error suppressing type $\ANY$ and a
-non-error suppressing type $\UNKNOWN$. $\ANY$ is the top type, and
-$\UNKNOWN$ is the top non-error-suppressing type. We consider
-$\ANY$ to be equivalent to $\UNKNOWN \UNION \ERROR$.
-
 Error suppressing types as a technique for minimizing cascading type
 errors appears to folklore, for example it is implemented in Typed
 Racket~\cite{TH08:ErrorHandling}, but does not appear to have been
@@ -235,8 +235,139 @@ academically published.
 
 \subsection{Gradual Typing via Error Suppressing Types}
 
+At this point a reader might guess where this paper is going.  Gradual
+types are well established research area which allows programmers
+to type expressions with type $\ANY$ to suppress type errors.  Error
+suppressing types are well established folklore which
+allows type inference to type expressions with error suppressing types
+to suppress cascading type errors.
+
+The connection between these two areas is pretty obvious, but has not
+been made before. If $\ANY$ is an error suppressing type, then
+gradual typing is very similar to error suppression, but does
+not require the non-transitive type compatibility relation.
+
+In \anon{Luau}, the use of error suppressing types explains why
+\anon{Luau}, in common with TypeScript~\cite{TypeScript}, has both an
+error suppressing type $\ANY$ and a non-error suppressing type
+$\UNKNOWN$. $\ANY$ is the top type, and $\UNKNOWN$ is the top
+non-error-suppressing type. We consider $\ANY$ to be equivalent to
+$\UNKNOWN \UNION \ERROR$.
+
 \subsection{Constructive Type Errors}
 
+Error suppressing types is a folklore implementation technique
+for suppressing cascading type errors. In this paper we present
+a formalization as a constructive model of type errors. We do this by
+separating out type derivations fro type errors.
+
+For example, one traditional way to present the type rule for function
+application is:
+\[
+  \infer{
+    \Gamma \vdash M : T \\
+    \Gamma \vdash N : U \\
+    U <: \SRC(T)
+  }{
+    \Gamma \vdash M(N) : \APPLY(T,U)
+  }
+\]
+using functions to calculate the domain of a function $\SRC(T)$, for example
+following~\cite[\S5.2]{Ken21:DownDirty}:
+\[
+  \SRC(S \fun T) = S
+\quad
+  \SRC(S \cap T) = \SRC(S) \cup \SRC(T)
+\quad
+  \cdots
+\]
+and to calculate the result type of applying a function $\APPLY(T,U)$,
+for example following~\cite[\S5.3]{Ken21:DownDirty}:
+\[ 
+  \APPLY(S \fun T, U) =
+  \left\{\begin{array}{@{}ll}
+    T & \text{if } U <: T \\
+    \ANY & \text{otherwise}
+  \end{array}\right.
+\quad
+  \APPLY(S \cap T, U) = \APPLY(S, U) \cap \APPLY(T, U)
+\quad
+  \cdots
+\]
+(The details of these function are spelled out in Appendix~\ref{app:semsub}.)
+
+This formulation is fine if is one is only interested in well typed programs,
+and in not in the behavior of badly typed programs. For example,
+the classic ``well typed programs don't go wrong'' can be stated as:
+\[
+  (M \rightarrow^* M') \fun
+  (\RUNTIMEERR(M')) \fun
+  \neg(\emptyset \vdash M : T)
+\]
+(for an appropriate definition of $\RUNTIMEERR(M')$). Now, this does not have
+a constructive model of type warnings, since we are only considering
+badly typed programs as ones where $\neg(\emptyset \vdash M : T)$.
+
+In this paper, we separate type derivations from their type errors.
+This is done by explicitly tracking the derivation tree for typing,
+for example:
+\[
+  \infer{
+    D_1 : (\Gamma \vdash M : T) \\
+    D_2 : (\Gamma \vdash N : U)
+  }{
+    \APP(D_1, D_2) : (\Gamma \vdash M(N) : \APPLY(T,U))
+  }
+\]
+which allows us to define which type derivations generate warnings,
+for example there are three ways a warning can be generated from a
+function application $M(N)$, bubbling up a warning from $M$ or $N$, or
+by a failure of subtyping:
+\[
+  \infer{
+    \WARN(D_1)
+  }{
+    \WARN(\APP(D_1, D_2))
+  }
+\quad
+  \infer{
+    \WARN(D_2)
+  }{
+    \WARN(\APP(D_1, D_2))
+  }
+\quad
+  \infer{
+    U \not<: \SRC(T)
+  }{
+    \WARN(\APP(D_1, D_2))
+  }
+\]
+Now, there are two important results about this presentation of
+constructive type errors. The first is \emph{infallible typing},
+that every program can be type checked in every context:
+\[
+  \forall \Gamma, M \st
+  \exists T \st
+  (\Gamma \vdash M : T)
+\]
+(We write $\TYPEOF(\Gamma, M)$ for this derivation tree.)
+The second is that we can state ``well typed programs don't go wrong''
+constructively:
+\[
+  (M \rightarrow^* M') \fun
+  (\RUNTIMEERR(M')) \fun
+  \WARN(\TYPEOF(\emptyset, M))
+\]
+Since this is phased constructively,
+Curry Howard means we can think of this statement in two ways:
+\begin{itemize}
+  \item as a proof that ``well typed programs don't go wrong''
+  \item as a time-travel debugger,
+    that for any execution $(M \rightarrow^* M')$
+    where $M'$ has a run-time error,
+    it can be run back in time to find a root cause type error for $M'$.
+\end{itemize}
+  
 \subsection{Contributions}
 
 \section{Further work}
@@ -246,6 +377,7 @@ TODO
 \appendix
 
 \section{Pragmatic Semantic Subtyping}
+\label{app:semsub}
 
 TODO
 
