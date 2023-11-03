@@ -27,6 +27,8 @@
 \newcommand{\UNION}{\mathbin{\mathtt{\char`\|}}}
 \newcommand{\fun}{\mathbin{\rightarrow}}
 \newcommand{\compat}{\sim}
+\newcommand{\sem}[1]{\llbracket{#1}\rrbracket}
+\newcommand{\nsem}[1]{\llbracket{#1}\rrbracket^\complement}
 \newcommand{\st}{\mathbin.}
 
 \begin{document}
@@ -342,6 +344,16 @@ by a failure of subtyping:
     \WARN(\APP(D_1, D_2))
   }
 \]
+This is based on a constructive framing of failure of subtyping,
+fleshed out in Appendix~\ref{app:semsub}:
+\[
+\infer{
+    v \in \sem{T} \\
+    v \in \nsem{U} \\
+  }{
+    T \not<: U
+  }
+\]
 Now, there are two important results about this presentation of
 constructive type errors. The first is \emph{infallible typing},
 that every program can be type checked in every context:
@@ -367,8 +379,39 @@ Curry Howard means we can think of this statement in two ways:
     where $M'$ has a run-time error,
     it can be run back in time to find a root cause type error for $M'$.
 \end{itemize}
-  
+Constructive type errors can be easily adapted to error suppressing
+types, for example we only report a failure of subtyping when both the
+type of the function and the type of argument are not error suppressing:
+\[
+\infer{
+    \ERROR \not<: T \\
+    \ERROR \not<: U \\
+    U \not<: \SRC(T)
+  }{
+    \WARN(\APP(D_1, D_2))
+  }
+\]
+Now, in general this breaks type soundness, because if every type is
+$\ANY$ then all type errors are suppressed. But we can show that in
+the case of a program in which no types are error suppressing,
+``well typed programs don't go wrong''.
+
 \subsection{Contributions}
+
+In summary, this paper combines two well-explored areas:
+\begin{itemize}
+  \item gradual types, and
+  \item error suppressing types.
+\end{itemize}
+The new contributions of this paper are:
+\begin{itemize}
+  \item combining gradual types and error suppressing types,
+  \item formalizing error suppressing types as constructive type errors, and
+  \item showing type soundness for programs which do not contain error
+    suppressing types.
+\end{itemize}
+The results are mechanized in Agda~\anon{\cite{BJ23:agda-typeck}}.
+
 
 \section{Further work}
 
