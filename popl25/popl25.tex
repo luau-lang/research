@@ -13,12 +13,16 @@
 \expandafter\def\csname @copyrightowner\endcsname{\anon{Roblox}.}
 
 \newcommand{\infer}[2]{\frac{\displaystyle\begin{array}{@{}l@{}}#1\end{array}}{\displaystyle#2}}
+\newcommand{\NEVER}{\mathtt{never}}
 \newcommand{\ANY}{\mathtt{any}}
 \newcommand{\UNKNOWN}{\mathtt{unknown}}
 \newcommand{\ERROR}{\mathtt{error}}
+\newcommand{\NIL}{\mathtt{nil}}
 \newcommand{\NUMBER}{\mathtt{number}}
 \newcommand{\STRING}{\mathtt{string}}
 \newcommand{\WARN}{\mathsf{Warn}}
+\newcommand{\DIVERGE}{\mathsf{diverge}}
+\newcommand{\CHECK}{\mathsf{check}}
 \newcommand{\RUNTIMEERR}{\mathsf{RunTimeErr}}
 \newcommand{\APPLY}{\mathsf{apply}}
 \newcommand{\APP}{\mathsf{app}}
@@ -28,7 +32,10 @@
 \newcommand{\fun}{\mathbin{\rightarrow}}
 \newcommand{\compat}{\sim}
 \newcommand{\sem}[1]{\llbracket{#1}\rrbracket}
+\newcommand{\ssem}[1]{\langle\!\langle{#1}\rangle\!\rangle}
 \newcommand{\nsem}[1]{\llbracket{#1}\rrbracket^\complement}
+\newcommand{\nssem}[1]{\ssem{#1}^\complement}
+\newcommand{\Val}{\mathcal{D}}
 \newcommand{\st}{\mathbin.}
 
 \begin{document}
@@ -296,7 +303,7 @@ for example following~\cite[\S5.3]{Ken21:DownDirty}:
 \quad
   \cdots
 \]
-(The details of these function are spelled out in Appendix~\ref{app:semsub}.)
+(The details of this function are spelled out in Section~\ref{sec:semsub}.)
 
 This formulation is fine if is one is only interested in well typed programs,
 and in not in the behavior of badly typed programs. For example,
@@ -345,7 +352,7 @@ by a failure of subtyping:
   }
 \]
 This is based on a constructive framing of failure of subtyping,
-fleshed out in Appendix~\ref{app:semsub}:
+fleshed out in Section~\ref{sec:semsub}:
 \[
 \infer{
     v \in \sem{T} \\
@@ -406,23 +413,166 @@ In summary, this paper combines two well-explored areas:
 The new contributions of this paper are:
 \begin{itemize}
   \item combining gradual types and error suppressing types,
-  \item formalizing error suppressing types as constructive type errors, and
+  \item formalizing error suppressing types as constructive type errors,
+  \item presenting a new \emph{pragmatic} model of semantic subtyping, and
   \item showing type soundness for programs which do not contain error
     suppressing types.
 \end{itemize}
 The results are mechanized in Agda~\anon{\cite{BJ23:agda-typeck}}.
+The concepts in this paper are released as part of
+\anon{Roblox Studio, used by millions of creators}.
+
+\section{Pragmatic Semantic Subtyping}
+\label{sec:semsub}
+
+\begin{figure}
+  
+\[\begin{array}{rcl}
+  v & ::= & \ERROR \mid s \mid (a \mapsto r) \\
+  a & ::= & () \mid (v) \\
+  r & ::= & \DIVERGE \mid \CHECK \mid (v) 
+\end{array}\]
+\caption{Semantic values}
+\label{fig:semval}
+
+\[\begin{array}{rcl}
+  \sem{s} & = & \ssem{s} \\
+  \sem{\ERROR} & = & \{ \ERROR \} \\
+  \sem{S \fun T} & = & \{ a \mapsto (w) \mid w \in \sem{T} \} \cup {} \\
+                    && \{ (v) \mapsto r \mid v \in \nsem{T} \} \cup {} \\
+                    && \{ a \mapsto \DIVERGE \} \cup {} \\
+                    && \{ () \mapsto \CHECK \} \\
+  \sem{S \cap T} & = & \sem{S} \cap \sem{T} \\
+  \sem{S \cup T} & = & \sem{S} \cup \sem{T} \\[\bigskipamount]
+\end{array}\]
+\caption{Semantics of types as sets of values}
+\label{fig:typsem}
+
+\[\begin{array}{rcl}
+  \nsem{s} & = & \nssem{s} \\
+  \nsem{\ERROR} & = & \{ s \} \cup {} \\
+              && \{ a \mapsto r \} \\
+  \nsem{S \fun T} & = & \{ s \} \cup {} \\
+              && \{ () \mapsto (w) \mid w \in \nsem{T} \} \cup {} \\
+              && \{ (v) \mapsto (w) \mid v \in \sem{T} \mid w \in \nsem{T} \} \cup {} \\
+              && \{ (v) \mapsto \CHECK \mid v \in \sem{T} \} \\
+  \nsem{S \cap T} & = & \nsem{S} \cup \nsem{T} \\
+  \nsem{S \cup T} & = & \nsem{S} \cap \nsem{T}
+\end{array}\]
+\caption{Complemented semantics of types as sets of values}
+
+\end{figure}
+
+\subsection{What is pragmatic semantic subtyping}
+
+In \anon{Luau}, we use a variant of semantic subtyping~\cite{???}. The important properties
+of semantic subtyping is:
+\begin{itemize}
+\item there is a set $\Val$ of semantic values,
+\item each type $T$ has a semantics $\sem{T} \subseteq \Val$,
+\item $\ANY$ and $\NEVER$ types are interpreted as $\Val$ and $\emptyset$,
+\item union and intersection types are interpreted as set union and intersection, and
+\item subtyping $T <: U$ is interpreted as $\sem{T} \subseteq \sem{U}$.
+\end{itemize}
+However, the off-the-shelf presentation of semantic subtyping is \emph{set theoretic}~\cite[\S2.5]{GF05:GentleIntroduction}:
+\[
+  \sem{T_1} \subseteq \sem{T_2} \mbox{ if and only if }
+  \mathcal{E}\sem{T_1} \subseteq \mathcal{E}\sem{T_2}
+\]
+where the most important case for $\mathcal{E}\sem{T}$ is function types:
+\[
+  \mathcal{E}\sem{S \fun T} = \mathcal{P}(\Val^2 \setminus (\sem{S} \times (\Val \setminus \sem{T})))
+\]
+The set theoretical requirement has some consequences:
+\begin{itemize}
+  
+\item All functions types $(\NEVER \fun T)$ are identified, since:
+  \[\begin{array}{l}
+    \mathcal{E}\sem{\NEVER \fun T_1} \\\quad
+     = \mathcal{P}(\Val^2 \setminus (\sem{\NEVER} \times (\Val \setminus \sem{T_1}))) \\\quad
+     = \mathcal{P}(\Val^2 \setminus (\emptyset \times (\Val \setminus \sem{T_1}))) \\\quad
+     = \mathcal{P}(\Val^2) \\\quad
+     = \mathcal{P}(\Val^2 \setminus (\emptyset \times (\Val \setminus \sem{T_2}))) \\\quad
+     = \mathcal{P}(\Val^2 \setminus (\sem{\NEVER} \times (\Val \setminus \sem{T_2}))) \\\quad
+     = \mathcal{E}\sem{\NEVER \fun T_2}
+  \end{array}\]
+  in particular, this means we cannot define a semantic-preserving function
+  $\APPLY(T, U)$ such that:
+  \[
+    \APPLY(S \fun T, U) = T \mbox{ when } U <: S
+  \]
+  because there is a nasty case where $U$ is uninhabited. In this presentation,
+  the $\APPLY$ function used in the rule for function application:
+  \[
+    \infer{
+      D_1 : (\Gamma \vdash M : T) \\
+      D_2 : (\Gamma \vdash N : U)
+    }{
+      \APP(D_1, D_2) : (\Gamma \vdash M(N) : \APPLY(T,U))
+    }
+  \]
+  so we have to accept that in a set-theoretic model, the type rule for function
+  application has corner cases for uninhabited types.
+
+\item Union does not distributed through function types.
+  Semantic subtyping gives a natural model of overloaded functions as intersections of arrows,
+  for example the \anon{Roblox} API for matrices include an overloaded function
+  which supports multiplication of both 1D and 2D matrices:
+\begin{verbatim}
+   mul : (Matrix1D , Matrix1D) -> Matrix1D
+       & (Matrix1D , Matrix2D) -> Matrix1D
+       & (Matrix2D , Matrix1D) -> Matrix1D
+       & (Matrix2D , Matrix2D) -> Matrix2D
+\end{verbatim}
+  Overloaded functions are a key part of the \anon{Roblox} API, and we might expect that
+  all functions types can be presented as overloaded functions. We can do this if we can present
+  unions of overloaded functions as overloaded functions. Now, union distributes through intersection,
+  so all that is required is to distribute union through arrow and we would be set:
+  \[
+    \sem{(S_1 \fun T_1) \cup (S_2 \fun T_2)}
+    =
+    \sem{(S_1 \cap S_2) \fun (T_1 \cup T_2)}
+  \]
+  For example:
+  \[
+    \sem{(\NUMBER? \fun \NUMBER) \cup (\STRING? \fun \STRING)}
+    =
+    \sem{\NIL \fun (\NUMBER \cup \STRING)}
+  \]
+  Unfortunately, set-theoretic models do not allow union to distributed through intersection,
+  for example:
+  \[\begin{array}{rcl}
+    \{ (\texttt{1}, \NIL), (\texttt{"hi"}, \NIL) \} & \in & \mathcal{E}\sem{\NIL \fun (\NUMBER \cup \STRING)} \\
+    \{ (\texttt{1}, \NIL), (\texttt{"hi"}, \NIL) \} & \not\in & \mathcal{E}\sem{\NUMBER? \fun \NUMBER} \\
+    \{ (\texttt{1}, \NIL), (\texttt{"hi"}, \NIL) \} & \not\in & \mathcal{E}\sem{\STRING? \fun \STRING}
+  \end{array}\]
+  This is why type normalization for function types in set-theoretic models
+  uses a conjunctive normal form of unions of intersections of functions~\cite{???}.
+  
+\item Arbitrary negation types.
+  \anon{Luau} does not support negation of all types, but only negation of \emph{test types}~\cite{???},
+  which simplifies the model, by not requiring arbitrary type negation.
+  In particular, since the model does not support negation of function types,
+  the normal form for function types is just overload functions, not combinations
+  of positive and negative function types.
+  
+\end{itemize}
+In summary there is a trade-off in semantic subtyping:
+\begin{itemize}
+  
+\item \emph{set-theoretic} models, which are closer to the set-theoretic model
+  of functions, and
+
+\item \emph{pragmatic} models, which drop the set-theoretic requirement, and in return
+  a)~do not have corner cases on the type of function application when the argument has uninhabited type, and
+  b)~have overloaded functions (that is intersections of arrows) as the normal for function types.
+  
+\end{itemize}
+\anon{Luau} chooses to adopt a pragmatic semantic subtyping model.
 
 
 \section{Further work}
 
-TODO
-
-\appendix
-
-\section{Pragmatic Semantic Subtyping}
-\label{app:semsub}
-
-TODO
 
 \bibliographystyle{ACM-Reference-Format}
 \bibliography{bibliography}
