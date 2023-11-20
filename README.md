@@ -2,18 +2,18 @@
 
 [Bibliography](luau.bib), [Repo](https://github.com/luau-lang/research)
 
-## HATRA'21: Position Paper: Goals of the Luau Type System
+## HATRA 2021: Position Paper: Goals of the Luau Type System
 
 Authors: Lily Brown, Andy Friesen, Alan Jeffrey
 
 Luau is the scripting language that powers user-generated experiences on the Roblox platform. It is a statically- typed language, based on the dynamically-typed Lua language, with type inference. These types are used for providing editor assistance in Roblox Studio, the IDE for authoring Roblox experiences. Due to Roblox’s uniquely heterogeneous developer community, Luau must operate in a somewhat different fashion than a traditional statically-typed language. In this paper, we describe some of the goals of the Luau type system, focusing on where the goals differ from those of other type systems.
 
 Licensed via [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/),
-Copyright © 2021 Roblox.
+Copyright © 2021 Roblox.  Video copyright © 2021 ACM.
 
 [Paper](hatra21/hatra21.pdf), [Slides](hatra21/talk.pdf), [Video](https://www.youtube.com/watch?v=nziiBPtB0eQ)
 
-## HATRA'23: Goals of the Luau Type System, Two Years On
+## HATRA 2023: Goals of the Luau Type System, Two Years On
 
 Authors: Lily Brown, Andy Friesen, Alan Jeffrey
 
@@ -24,7 +24,7 @@ Copyright © 2023 Roblox.
 
 [Paper](hatra23/hatra23.pdf), [Slides](hatra23/talk.pdf)
 
-## Draft Manuscript: Towards an Unsound But Complete Type System
+## Incorrectness 2024: Towards an Unsound But Complete Type System
 
 Authors: Lily Brown, Andy Friesen, Alan Jeffrey, Vighnesh Vijay
 
