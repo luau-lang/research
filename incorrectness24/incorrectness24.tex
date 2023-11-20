@@ -212,6 +212,9 @@ synthesizes context
 (\verb|T & U| is Luau's concrete syntax for type intersection.)
 Since \verb|~number & ~string| is not equivalent to \verb|unknown|, non-strict mode reports no warning.
 
+This use of intersection and union types is similar to the treatment of angelic
+and demonic nondeterminism in \cite{???}.
+
 \begin{figure*}
   \[\begin{array}{c}
     \infer{
@@ -349,6 +352,10 @@ This system is also different from  success
 typings~\cite{SuccessTyping}, which has functions
 $(\neg S \fun \ERROR) \cap (\UNKNOWN \fun (T \cup \ERROR))$,
 in our system, which are covariant in both $S$ and $T$.
+
+This is also similar to \emph{necessity arrows} from \cite{RW23:IllTyped}. Their
+type system is similar to ours in that both systems have typing contexts on both
+the left and right-hand side of a typing judgement.
 
 \section{Future work}
 
