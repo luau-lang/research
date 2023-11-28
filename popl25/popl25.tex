@@ -64,8 +64,8 @@
   \emph{constructively} as a proof object $\WARN(\Gamma \vdash M : T)$
   saying that the type derivation $\Gamma \vdash M : T$ should
   generate a warning. Viewing type warnings constructively allows us
-  to talk about \emph{error suppression}, for example the $\ANY$ type
-  is error suppressing, and so this type system is gradual in the
+  to talk about \emph{error suppression}, for example type errors involving the the $\ANY$ type
+  are suppressed, and so this type system is gradual in the
   sense that developers can explicitly annotate terms with the $\ANY$
   type to switch off type warnings. This system has the usual ``well-typed
   programs don't go wrong'' result for program which do not have
@@ -153,7 +153,7 @@ For example:
     }
 \]
 The problem we discovered in implementing gradual typing on top of type
-compatibility is that it is a source of subtle bug, because the type
+compatibility is that it is a source of subtle bugs, because the type
 system is very sensitive as to when type equality is used rather than
 type compatibility. For example comparing two type rules:
 \[
@@ -238,7 +238,7 @@ Since $\NUMBER \UNION \ERROR$ is an error suppressing type,
 \verb|string.lower(y)| will not report a type error.
 
 Error suppressing types as a technique for minimizing cascading type
-errors appears to folklore, for example it is implemented in Typed
+errors appears to be folklore, for example it is implemented in Typed
 Racket~\cite{TH08:ErrorHandling}, but does not appear to have been
 academically published.
 
@@ -268,7 +268,7 @@ $\UNKNOWN \UNION \ERROR$.
 Error suppressing types is a folklore implementation technique
 for suppressing cascading type errors. In this paper we present
 a formalization as a constructive model of type errors. We do this by
-separating out type derivations fro type errors.
+separating out type derivations from type errors.
 
 For example, one traditional way to present the type rule for function
 application is:
@@ -294,7 +294,7 @@ and to calculate the result type of applying a function $\APPLY(T,U)$,
 for example following~\cite[\S5.3]{Ken21:DownDirty}:
 \[ 
   \APPLY(S \fun T, U) =
-  \left\{\begin{array}{@{}ll}
+  \left\{\begin{array}{ll}
     T & \text{if } U <: T \\
     \ANY & \text{otherwise}
   \end{array}\right.
@@ -465,8 +465,9 @@ The concepts in this paper are released as part of
 
 \subsection{What is pragmatic semantic subtyping}
 
-In \anon{Luau}, we use a variant of semantic subtyping~\cite{???}. The important properties
-of semantic subtyping is:
+In \anon{Luau}, we use a variant of semantic
+subtyping~\cite{GF05:GentleIntroduction,FCB08:SemanticSubtyping,Ken21:DownDirty}. The
+important properties of semantic subtyping are:
 \begin{itemize}
 \item there is a set $\Val$ of semantic values,
 \item each type $T$ has a semantics $\sem{T} \subseteq \Val$,
@@ -474,7 +475,7 @@ of semantic subtyping is:
 \item union and intersection types are interpreted as set union and intersection, and
 \item subtyping $T <: U$ is interpreted as $\sem{T} \subseteq \sem{U}$.
 \end{itemize}
-However, the off-the-shelf presentation of semantic subtyping is \emph{set theoretic}~\cite[\S2.5]{GF05:GentleIntroduction}:
+In addition, the off-the-shelf presentation of semantic subtyping is \emph{set theoretic}~\cite[\S2.5]{GF05:GentleIntroduction}:
 \[
   \sem{T_1} \subseteq \sem{T_2} \mbox{ if and only if }
   \mathcal{E}\sem{T_1} \subseteq \mathcal{E}\sem{T_2}
@@ -496,12 +497,12 @@ The set theoretical requirement has some consequences:
      = \mathcal{P}(\Val^2 \setminus (\sem{\NEVER} \times (\Val \setminus \sem{T_2}))) \\\quad
      = \mathcal{E}\sem{\NEVER \fun T_2}
   \end{array}\]
-  in particular, this means we cannot define a semantic-preserving function
+  in particular, this means we cannot define a semantics-preserving function
   $\APPLY(T, U)$ such that:
   \[
     \APPLY(S \fun T, U) = T \mbox{ when } U <: S
   \]
-  because there is a nasty case where $U$ is uninhabited. In this presentation,
+  because there is a nasty case where $S$ is uninhabited. In this presentation,
   the $\APPLY$ function used in the rule for function application:
   \[
     \infer{
@@ -525,9 +526,9 @@ The set theoretical requirement has some consequences:
        & (Matrix2D , Matrix2D) -> Matrix2D
 \end{verbatim}
   Overloaded functions are a key part of the \anon{Roblox} API, and we might expect that
-  all functions types can be presented as overloaded functions. We can do this if we can present
+  all function types can be presented as overloaded functions. We can do this if we can present
   unions of overloaded functions as overloaded functions. Now, union distributes through intersection,
-  so all that is required is to distribute union through arrow and we would be set:
+  so all that is required is to distribute union through arrow:
   \[
     \sem{(S_1 \fun T_1) \cup (S_2 \fun T_2)}
     =
@@ -547,16 +548,16 @@ The set theoretical requirement has some consequences:
     \{ (\texttt{1}, \NIL), (\texttt{"hi"}, \NIL) \} & \not\in & \mathcal{E}\sem{\STRING? \fun \STRING}
   \end{array}\]
   This is why type normalization for function types in set-theoretic models
-  uses a conjunctive normal form of unions of intersections of functions~\cite{???}.
-  
-\item Arbitrary negation types.
-  \anon{Luau} does not support negation of all types, but only negation of \emph{test types}~\cite{???},
-  which simplifies the model, by not requiring arbitrary type negation.
-  In particular, since the model does not support negation of function types,
-  the normal form for function types is just overload functions, not combinations
-  of positive and negative function types.
+  uses a conjunctive normal form of unions of intersections of functions e.g.~\cite[\S4.1.2]{Ken21:DownDirty}.
   
 \end{itemize}
+In addition, \anon{Luau} does not support negation of all types, but
+only negation of \emph{test types}~\cite{CLNL22:OnTypeCases}, which
+simplifies the model, by not requiring arbitrary type negation.  In
+particular, since the model does not support negation of function
+types, the normal form for function types is just overload functions,
+not combinations of positive and negative function types.
+
 In summary there is a trade-off in semantic subtyping:
 \begin{itemize}
   
@@ -570,9 +571,7 @@ In summary there is a trade-off in semantic subtyping:
 \end{itemize}
 \anon{Luau} chooses to adopt a pragmatic semantic subtyping model.
 
-
 \section{Further work}
-
 
 \bibliographystyle{ACM-Reference-Format}
 \bibliography{bibliography}
