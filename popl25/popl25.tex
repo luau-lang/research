@@ -18,6 +18,9 @@
 \newcommand{\UNKNOWN}{\mathtt{unknown}}
 \newcommand{\ERROR}{\mathtt{error}}
 \newcommand{\NIL}{\mathtt{nil}}
+\newcommand{\TRUE}{\mathtt{true}}
+\newcommand{\FALSE}{\mathtt{false}}
+\newcommand{\BOOLEAN}{\mathtt{boolean}}
 \newcommand{\NUMBER}{\mathtt{number}}
 \newcommand{\STRING}{\mathtt{string}}
 \newcommand{\WARN}{\mathsf{Warn}}
@@ -425,44 +428,6 @@ The concepts in this paper are released as part of
 \section{Pragmatic Semantic Subtyping}
 \label{sec:semsub}
 
-\begin{figure}
-  
-\[\begin{array}{rcl}
-  v & ::= & \ERROR \mid s \mid (a \mapsto r) \\
-  a & ::= & () \mid (v) \\
-  r & ::= & \DIVERGE \mid \CHECK \mid (v) 
-\end{array}\]
-\caption{Semantic values}
-\label{fig:semval}
-
-\[\begin{array}{rcl}
-  \sem{s} & = & \ssem{s} \\
-  \sem{\ERROR} & = & \{ \ERROR \} \\
-  \sem{S \fun T} & = & \{ a \mapsto (w) \mid w \in \sem{T} \} \cup {} \\
-                    && \{ (v) \mapsto r \mid v \in \nsem{T} \} \cup {} \\
-                    && \{ a \mapsto \DIVERGE \} \cup {} \\
-                    && \{ () \mapsto \CHECK \} \\
-  \sem{S \cap T} & = & \sem{S} \cap \sem{T} \\
-  \sem{S \cup T} & = & \sem{S} \cup \sem{T} \\[\bigskipamount]
-\end{array}\]
-\caption{Semantics of types as sets of values}
-\label{fig:typsem}
-
-\[\begin{array}{rcl}
-  \nsem{s} & = & \nssem{s} \\
-  \nsem{\ERROR} & = & \{ s \} \cup {} \\
-              && \{ a \mapsto r \} \\
-  \nsem{S \fun T} & = & \{ s \} \cup {} \\
-              && \{ () \mapsto (w) \mid w \in \nsem{T} \} \cup {} \\
-              && \{ (v) \mapsto (w) \mid v \in \sem{T} \mid w \in \nsem{T} \} \cup {} \\
-              && \{ (v) \mapsto \CHECK \mid v \in \sem{T} \} \\
-  \nsem{S \cap T} & = & \nsem{S} \cup \nsem{T} \\
-  \nsem{S \cup T} & = & \nsem{S} \cap \nsem{T}
-\end{array}\]
-\caption{Complemented semantics of types as sets of values}
-
-\end{figure}
-
 \subsection{What is pragmatic semantic subtyping}
 
 In \anon{Luau}, we use a variant of semantic
@@ -488,7 +453,7 @@ The set theoretical requirement has some consequences:
 \begin{itemize}
   
 \item All functions types $(\NEVER \fun T)$ are identified, since:
-  \[\begin{array}{l}
+vv  \[\begin{array}{l}
     \mathcal{E}\sem{\NEVER \fun T_1} \\\quad
      = \mathcal{P}(\Val^2 \setminus (\sem{\NEVER} \times (\Val \setminus \sem{T_1}))) \\\quad
      = \mathcal{P}(\Val^2 \setminus (\emptyset \times (\Val \setminus \sem{T_1}))) \\\quad
@@ -570,6 +535,92 @@ In summary there is a trade-off in semantic subtyping:
   
 \end{itemize}
 \anon{Luau} chooses to adopt a pragmatic semantic subtyping model.
+
+\subsection{Semantic subtyping for \anon{Luau}}
+
+\begin{figure}
+  
+\[\begin{array}{rcl}
+  v & ::= & s \mid (a \mapsto r) \mid \ERROR \\
+  a & ::= & () \mid (v) \\
+  r & ::= & \DIVERGE \mid \CHECK \mid (v) 
+\end{array}\]
+\caption{Semantic values}
+\label{fig:semval}
+
+\[\begin{array}{rcl}
+  \sem{b} & = & \ssem{b} \\
+  \sem{\ERROR} & = & \{ \ERROR \} \\
+  \sem{\ANY} & = & \mathcal{D} \\
+  \sem{\NEVER} & = & \emptyset \\
+  \sem{S \fun T} & = & \{ a \mapsto (w) \mid w \in \sem{T} \} \cup {} \\
+                    && \{ (v) \mapsto r \mid v \in \nsem{T} \} \cup {} \\
+                    && \{ a \mapsto \DIVERGE \} \cup {} \\
+                    && \{ () \mapsto \CHECK \} \\
+  \sem{S \cap T} & = & \sem{S} \cap \sem{T} \\
+  \sem{S \cup T} & = & \sem{S} \cup \sem{T} \\[\bigskipamount]
+\end{array}\]
+\caption{Semantics of types as sets of values}
+\label{fig:typsem}
+
+\[\begin{array}{rcl}
+  \nsem{b} & = & \nssem{b} \\
+  \nsem{\ERROR} & = & \{ s \} \cup {} \\
+              && \{ a \mapsto r \} \\
+  \sem{\ANY} & = & \emptyset \\
+  \sem{\NEVER} & = & \mathcal{D} \\
+  \nsem{S \fun T} & = & \{ s \} \cup {} \\
+              && \{ () \mapsto (w) \mid w \in \nsem{T} \} \cup {} \\
+              && \{ (v) \mapsto (w) \mid v \in \sem{T} \mid w \in \nsem{T} \} \cup {} \\
+              && \{ (v) \mapsto \CHECK \mid v \in \sem{T} \} \\
+  \nsem{S \cap T} & = & \nsem{S} \cup \nsem{T} \\
+  \nsem{S \cup T} & = & \nsem{S} \cap \nsem{T}
+\end{array}\]
+\caption{Complemented semantics of types as sets of values}
+
+\end{figure}
+
+In this presentation, we will ignore the details of scalar types,
+and assume that:
+\begin{itemize}
+
+\item there are scalar types, ranged over by $b$,
+  such as $\NIL$, $\BOOLEAN$, $\NUMBER$ and $\STRING$,
+  
+\item there are scalar values, ranged over by $s$,
+  such as $\NIL$, $\TRUE$, $\FALSE$, numbers and string literals, and
+
+\item each scalar type $s$ has a set of scalar values $\ssem{s}$, such as:
+  \[
+    \ssem{\NIL} = \{ \NIL \} \quad
+    \ssem{\BOOLEAN} = \{ \TRUE, \FALSE \} \quad
+    \ssem{\NUMBER} = \{ 0, 1, \dots \} \quad \cdots
+  \]
+  
+\end{itemize}
+The types we are consdering are:
+\[
+S, T ::= b \mid \ERROR \mid \ANY \mid \NEVER \mid S \fun T \mid S \cap T \mid S \cup T
+\]
+which are:
+\begin{itemize}
+
+\item the \emph{scalar types} $b$
+  
+\item the \emph{error-suppressing type} $\ERROR$,
+
+\item the \emph{anything type} $\ANY$,
+
+\item the \emph{uninhabited type} $\NEVER$,
+
+\item a \emph{function} type $S \fun T$,
+
+\item an \emph{intersection} type $S \cap T$, and
+
+\item a \emph{union} type $S \cup T$.
+
+\end{itemize}
+
 
 \section{Further work}
 
