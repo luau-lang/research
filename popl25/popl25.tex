@@ -453,7 +453,7 @@ The set theoretical requirement has some consequences:
 \begin{itemize}
   
 \item All functions types $(\NEVER \fun T)$ are identified, since:
-vv  \[\begin{array}{l}
+  \[\begin{array}{l}
     \mathcal{E}\sem{\NEVER \fun T_1} \\\quad
      = \mathcal{P}(\Val^2 \setminus (\sem{\NEVER} \times (\Val \setminus \sem{T_1}))) \\\quad
      = \mathcal{P}(\Val^2 \setminus (\emptyset \times (\Val \setminus \sem{T_1}))) \\\quad
@@ -541,7 +541,7 @@ In summary there is a trade-off in semantic subtyping:
 \begin{figure}
   
 \[\begin{array}{rcl}
-  v & ::= & s \mid \ERROR \\ \mid (a \mapsto r)
+  v & ::= & s \mid \ERROR \mid (a \mapsto r) \\
   a & ::= & () \mid (v) \\
   r & ::= & \DIVERGE \mid \CHECK \mid (v) 
 \end{array}\]
@@ -598,7 +598,7 @@ v    \ssem{\BOOLEAN} = \{ \TRUE, \FALSE \} \quad
   \]
   
 \end{itemize}
-The types we are consdering are:
+The types we are considering are:
 \[
 S, T ::= b \mid \ERROR \mid \ANY \mid \NEVER \mid S \fun T \mid S \cap T \mid S \cup T
 \]
@@ -620,15 +620,15 @@ which are:
 \item a \emph{union} type $S \cup T$.
 
 \end{itemize}
-To give a semantic subtying, we first declare the domain $\mathcal{D}$
+To give a semantic subtyping, we first declare the domain $\mathcal{D}$
 of \emph{semantic values}, given by the grammar $v$ of Figure~\ref{fig:semval}.
 Semantic values are:
-vvv\begin{itemize}
+\begin{itemize}
   
 \item \emph{scalar values} $s$,
 
 \item \emph{error values} $\ERROR$,
-  witnessing a error-suppresing type,
+  witnessing a error-suppressing type,
   and
 
 \item \emph{function values} $a \mapsto r$,
@@ -641,37 +641,68 @@ For example:
   
 \item $\TRUE$ and $\FALSE$ are values in $\BOOLEAN$,
 \item $\TRUE$ and $\FALSE$ and $\NIL$ are values in the optional type $\BOOLEAN \cup \NIL$,
-\item $\TRUE$ and $\FALSE$ and $\ERROR$ are values in the error-suppresing type $\BOOLEAN \cup \ERROR$,
+\item $\TRUE$ and $\FALSE$ and $\ERROR$ are values in the error-suppressing type $\BOOLEAN \cup \ERROR$,
   and 
 \item $(\TRUE) \mapsto (\FALSE)$ is a value in the function type $\BOOLEAN \fun \BOOLEAN$.
 
 \end{itemize}
-Scalar and error-suppressing values are relatively straighforward, but
-functions are trickier. The case where a type-correctness argument is
+Scalar and error-suppressing values are relatively straightforward, but
+functions are trickier. The case where a type-correct argument is
 supplied and a type-correct result is returned is clean, for example:
 \[
   ((\TRUE) \mapsto (\FALSE)) \in \sem{\BOOLEAN \fun \BOOLEAN}
 \]
 But there is also the case where a type-incorrect argument is
-supplied, in which case there is no guarentee what is returned, for example:
+supplied, in which case there is no guarantee what is returned, for example:
 \[
   ((5) \mapsto (37)) \in \sem{\BOOLEAN \fun \BOOLEAN}
 \]
-The guarantee applies when a type-correct argument is provided:
+The type-correctness guarantee for results applies when a type-correct argument is provided:
 \[
   ((\TRUE) \mapsto (37)) \not\in \sem{\BOOLEAN \fun \BOOLEAN}
 \]
 Those examples consider cases where one value is supplied as an argument,
 and one is returned, but \anon{Luau} allows other cases.
-\begin{itemize}
-\item \anon{Luau} allows functions to be called without any arguemts
-  (modeled in this sematics as $() \mapsto r$)
-\item \anon{Luau} allows functions to check arguments,
-  (modeled in this sematics as $a \mapsto \CHECK$), and
-\item \anon{Luau}, as is common in most functional lanuages, allows functions to diverge
-  (modeled in this sematics as $a \mapsto \DIVERGE$).
-\end{itemize}
-
+\anon{Luau}, as is common in most functional languages, allows functions to diverge
+(modeled in this semantics as $a \mapsto \DIVERGE$).,
+for example:
+\[
+  ((\TRUE) \mapsto \DIVERGE) \in \sem{\BOOLEAN \fun \BOOLEAN}
+\]
+and:
+\[
+  ((5) \mapsto \DIVERGE) \in \sem{\BOOLEAN \fun \BOOLEAN}
+\]
+\anon{Luau} allows functions to check arguments,
+(modeled in this semantics as $a \mapsto \CHECK$ when a checked fails),
+for example:
+\[
+  ((5) \mapsto \CHECK) \in \sem{\BOOLEAN \fun \BOOLEAN}
+\]
+but:
+\[
+  ((\TRUE) \mapsto \CHECK) \not\in \sem{\BOOLEAN \fun \BOOLEAN}
+\]
+\anon{Luau} allows functions to be called without any arguments
+(modeled in this semantics as $() \mapsto r$)
+for example:
+\[
+  (() \mapsto (\FALSE)) \in \sem{\BOOLEAN \fun \BOOLEAN}
+\]
+and:
+\[
+  (() \mapsto \DIVERGE) \in \sem{\BOOLEAN \fun \BOOLEAN}
+\]
+and:
+\[
+  (() \mapsto \CHECK) \in \sem{\BOOLEAN \fun \BOOLEAN}
+\]
+The restriction on zero-argument function calls is that they are allowed to return
+a $\CHECK$ (since they have been passed the wrong number of arguments)
+but they are not just allowed to return arbitrary nonsense:
+\[
+  (() \mapsto (5)) \not\in \sem{\BOOLEAN \fun \BOOLEAN}
+\]
 
 \section{Further work}
 
