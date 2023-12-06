@@ -536,7 +536,7 @@ In summary there is a trade-off in semantic subtyping:
 \end{itemize}
 \anon{Luau} chooses to adopt a pragmatic semantic subtyping model.
 
-\subsection{Semantic subtyping for \anon{Luau}}
+\subsection{Semantic values for \anon{Luau}}
 
 \begin{figure}
   
@@ -547,36 +547,6 @@ In summary there is a trade-off in semantic subtyping:
 \end{array}\]
 \caption{Semantic values}
 \label{fig:semval}
-
-\[\begin{array}{rcl}
-  \sem{b} & = & \ssem{b} \\
-  \sem{\ERROR} & = & \{ \ERROR \} \\
-  \sem{\ANY} & = & \mathcal{D} \\
-  \sem{\NEVER} & = & \emptyset \\
-  \sem{S \fun T} & = & \{ a \mapsto (w) \mid w \in \sem{T} \} \cup {} \\
-                    && \{ (v) \mapsto r \mid v \in \nsem{T} \} \cup {} \\
-                    && \{ a \mapsto \DIVERGE \} \cup {} \\
-                    && \{ () \mapsto \CHECK \} \\
-  \sem{S \cap T} & = & \sem{S} \cap \sem{T} \\
-  \sem{S \cup T} & = & \sem{S} \cup \sem{T} \\[\bigskipamount]
-\end{array}\]
-\caption{Semantics of types as sets of values}
-\label{fig:typsem}
-
-\[\begin{array}{rcl}
-  \nsem{b} & = & \nssem{b} \\
-  \nsem{\ERROR} & = & \{ s \} \cup {} \\
-              && \{ a \mapsto r \} \\
-  \nsem{\ANY} & = & \emptyset \\
-  \nsem{\NEVER} & = & \mathcal{D} \\
-  \nsem{S \fun T} & = & \{ s \} \cup {} \\
-              && \{ () \mapsto (w) \mid w \in \nsem{T} \} \cup {} \\
-              && \{ (v) \mapsto (w) \mid v \in \sem{T} \mid w \in \nsem{T} \} \cup {} \\
-              && \{ (v) \mapsto \CHECK \mid v \in \sem{T} \} \\
-  \nsem{S \cap T} & = & \nsem{S} \cup \nsem{T} \\
-  \nsem{S \cup T} & = & \nsem{S} \cap \nsem{T}
-\end{array}\]
-\caption{Complemented semantics of types as sets of values}
 
 \end{figure}
 
@@ -702,6 +672,68 @@ a $\CHECK$ (since they have been passed the wrong number of arguments)
 but they are not just allowed to return arbitrary nonsense:
 \[
   (() \mapsto (5)) \not\in \sem{\BOOLEAN \fun \BOOLEAN}
+\]
+At this point we have introduced the semantic values used by the \anon{Luau} type
+system, and can turn the semantics of types, from which semantic subyping follows.
+
+\subsection{Semantics of \anon{Luau} type}
+
+\begin{figure}
+  
+\[\begin{array}{rcl}
+  \sem{b} & = & \ssem{b} \\
+  \sem{\ERROR} & = & \{ \ERROR \} \\
+  \sem{\ANY} & = & \mathcal{D} \\
+  \sem{\NEVER} & = & \emptyset \\
+  \sem{S \fun T} & = & \{ a \mapsto (w) \mid w \in \sem{T} \} \cup {} \\
+                    && \{ (v) \mapsto r \mid v \in \nsem{T} \} \cup {} \\
+                    && \{ a \mapsto \DIVERGE \} \cup {} \\
+                    && \{ () \mapsto \CHECK \} \\
+  \sem{S \cap T} & = & \sem{S} \cap \sem{T} \\
+  \sem{S \cup T} & = & \sem{S} \cup \sem{T} \\[\bigskipamount]
+\end{array}\]
+\caption{Semantics of types as sets of values}
+\label{fig:typsem}
+
+\[\begin{array}{rcl}
+  \nsem{b} & = & \nssem{b} \\
+  \nsem{\ERROR} & = & \{ s \} \cup {} \\
+              && \{ a \mapsto r \} \\
+  \nsem{\ANY} & = & \emptyset \\
+  \nsem{\NEVER} & = & \mathcal{D} \\
+  \nsem{S \fun T} & = & \{ s \} \cup {} \\
+              && \{ () \mapsto (w) \mid w \in \nsem{T} \} \cup {} \\
+              && \{ (v) \mapsto (w) \mid v \in \sem{T} \mid w \in \nsem{T} \} \cup {} \\
+              && \{ (v) \mapsto \CHECK \mid v \in \sem{T} \} \\
+  \nsem{S \cap T} & = & \nsem{S} \cup \nsem{T} \\
+  \nsem{S \cup T} & = & \nsem{S} \cap \nsem{T}
+\end{array}\]
+\caption{Complemented semantics of types as sets of values}
+
+\end{figure}
+
+The semantics of \anon{Luau} types are given in Fig~\ref{fig:typsem}.
+
+For example, two of the important rules are for functions, in the case where
+functions are called with argument values, and return result values.
+The rules are:
+
+\begin{itemize}
+\item
+  \textbf{Type-incorrect argument:}
+  if $v \not\in \sem{S}$
+  then $((v) \mapsto r) \in \sem{S \fun T}$
+\item
+  \textbf{Type-correct result:}
+  if $w \in \sem{T}$
+  then $(a \mapsto (w)) \in \sem{S \fun T}$
+\end{itemize}
+This is the same as the semantics of Coppo types~\cite{???}
+as used in the fully abstract semantics of Lazy Lambda Calculus~\cite{???}
+using Domain Theory In Logical Form~\cite{???}.
+\[
+  ((v) \mapsto (w)) \in \sem{S \fun T} \mbox{ if and only if }
+  (v \in \sem{S}) \Rightarrow (w \in \sem{T})
 \]
 
 \section{Further work}
