@@ -674,7 +674,7 @@ but they are not just allowed to return arbitrary nonsense:
   (() \mapsto (5)) \not\in \sem{\BOOLEAN \fun \BOOLEAN}
 \]
 At this point we have introduced the semantic values used by the \anon{Luau} type
-system, and can turn the semantics of types, from which semantic subyping follows.
+system, and can turn the semantics of types, from which semantic subtyping follows.
 
 \subsection{Semantics of \anon{Luau} type}
 
@@ -695,24 +695,12 @@ system, and can turn the semantics of types, from which semantic subyping follow
 \caption{Semantics of types as sets of values}
 \label{fig:typsem}
 
-\[\begin{array}{rcl}
-  \nsem{b} & = & \nssem{b} \\
-  \nsem{\ERROR} & = & \{ s \} \cup {} \\
-              && \{ a \mapsto r \} \\
-  \nsem{\ANY} & = & \emptyset \\
-  \nsem{\NEVER} & = & \mathcal{D} \\
-  \nsem{S \fun T} & = & \{ s \} \cup {} \\
-              && \{ () \mapsto (w) \mid w \in \nsem{T} \} \cup {} \\
-              && \{ (v) \mapsto (w) \mid v \in \sem{T} \mid w \in \nsem{T} \} \cup {} \\
-              && \{ (v) \mapsto \CHECK \mid v \in \sem{T} \} \\
-  \nsem{S \cap T} & = & \nsem{S} \cup \nsem{T} \\
-  \nsem{S \cup T} & = & \nsem{S} \cap \nsem{T}
-\end{array}\]
-\caption{Complemented semantics of types as sets of values}
-
 \end{figure}
 
+
 The semantics of \anon{Luau} types are given in Fig~\ref{fig:typsem}.
+This semantics is presented mechanically in Agda in~\anon{\cite{BJ23:agda-typeck}},
+and we will give the most important results here.
 
 For example, two of the important rules are for functions, in the case where
 functions are called with argument values, and return result values.
@@ -735,6 +723,88 @@ using Domain Theory In Logical Form~\cite{???}.
   ((v) \mapsto (w)) \in \sem{S \fun T} \mbox{ if and only if }
   (v \in \sem{S}) \Rightarrow (w \in \sem{T})
 \]
+In order to give a constructive presentation of the semantics,
+rather than usual negative presentation of $v \not\in \sem{S}$,
+we give a positive presentation $v \in \nsem{S}$, as given in
+Fig~\ref{fig:typnsem}.
+
+\begin{figure}
+
+\[\begin{array}{rcl}
+  \nsem{b} & = & \nssem{b} \\
+  \nsem{\ERROR} & = & \{ s \} \cup {} \\
+              && \{ a \mapsto r \} \\
+  \nsem{\ANY} & = & \emptyset \\
+  \nsem{\NEVER} & = & \mathcal{D} \\
+  \nsem{S \fun T} & = & \{ s \} \cup {} \\
+              && \{ () \mapsto (w) \mid w \in \nsem{T} \} \cup {} \\
+              && \{ (v) \mapsto (w) \mid v \in \sem{T} \mid w \in \nsem{T} \} \cup {} \\
+              && \{ (v) \mapsto \CHECK \mid v \in \sem{T} \} \\
+  \nsem{S \cap T} & = & \nsem{S} \cup \nsem{T} \\
+  \nsem{S \cup T} & = & \nsem{S} \cap \nsem{T}
+\end{array}\]
+\caption{Complemented semantics of types as sets of values}
+\label{fig:typnsem}.
+
+\end{figure}
+
+It is routine to check that $\nsem{S \cap T}$ is a constructive
+presentation of $\mathcal{D} \setminus \sem{S \cap T}$.
+
+\begin{lemma}
+  \label{lem:language-comp}
+  $(v \in \nsem{T})$ if and only if $(v \not\in \sem{T})$.
+\end{lemma}
+
+Moreover there is a decision procedure for $v \in \sem{T}$ or $v \in \nsem{T}$.
+
+\begin{lemma}
+  $(v \in \sem{T}) \lor (v \in \nsem{T})$.
+\end{lemma}
+
+From the semantics of types as sets of semantic values,
+semantic subtyping $S <: T$ is a proof than if $v \in \sem{S}$, then
+$v \in \sem{T}$. Constructively this a dependent function:
+\[
+  (S <: T) \mbox{ if and only if } \forall v \st (v \in \sem{S}) \fun (v \in \sem{T})
+\]
+for example $\NUMBER <: \NUMBER?$ since for any $v$:
+\[
+  \infer{
+    \infer{
+      \infer{
+        v \in \sem{\NUMBER}
+      }{
+        v \in \ssem{\NUMBER}
+      }
+    }{
+      v \in (\ssem{\NUMBER} \cup \ssem{\NIL})
+    }
+  }{
+    v \in \sem{\NUMBER?}
+  }
+\]
+More interestingly is the constructive presentation of $S \not<: T$. Normally this is
+presented negatively, but it can be read constructively since $S \not<: T$ is witnessed by
+a value $v$ where $v \in \sem{S}$ but $v \in \nsem{T}$.
+\[
+  (S \not<: T) \mbox{ if and only if } \exists v \st (v \in \sem{S}) \land (v \in \nsem{T})
+\]
+for example $\NUMBER? \not<: \NUMBER$ since we can pick our witness $v$ to be $\NIL$:
+\[
+  \NIL \in \sem{\NUMBER?}
+  \quad
+  \NIL \in \nsem{\NUMBER}
+\]
+Now, by Lemma~\ref{lem:language-comp}, it is direct that $S \not<: T$ is a contradiction of $S <: T$:
+
+\begin{lemma}
+  $(S \not<: T) \fun \neg(S <: T)$
+\end{lemma}
+
+Unfortunately, this does not give a decision procedure for
+subtyping, for the usual reason that it tricky to build an algorithm for
+checking semantic subtyping, which requires type normalization~\cite{???}.
 
 \section{Further work}
 
