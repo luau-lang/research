@@ -686,7 +686,7 @@ system, and can turn the semantics of types, from which semantic subtyping follo
   \sem{\ANY} & = & \mathcal{D} \\
   \sem{\NEVER} & = & \emptyset \\
   \sem{S \fun T} & = & \{ a \mapsto (w) \mid w \in \sem{T} \} \cup {} \\
-                    && \{ (v) \mapsto r \mid v \in \nsem{T} \} \cup {} \\
+                    && \{ (v) \mapsto r \mid v \in \nsem{S} \} \cup {} \\
                     && \{ a \mapsto \DIVERGE \} \cup {} \\
                     && \{ () \mapsto \CHECK \} \\
   \sem{S \cap T} & = & \sem{S} \cap \sem{T} \\
@@ -759,8 +759,11 @@ presentation of $\mathcal{D} \setminus \sem{S \cap T}$.
 Moreover there is a decision procedure for $v \in \sem{T}$ or $v \in \nsem{T}$.
 
 \begin{lemma}
+  \label{lem:language-dec}
   $(v \in \sem{T}) \lor (v \in \nsem{T})$.
 \end{lemma}
+
+\subsection{Properties of semantic subtyping}
 
 From the semantics of types as sets of semantic values,
 semantic subtyping $S <: T$ is a proof than if $v \in \sem{S}$, then
@@ -768,23 +771,32 @@ $v \in \sem{T}$. Constructively this a dependent function:
 \[
   (S <: T) \mbox{ if and only if } \forall v \st (v \in \sem{S}) \fun (v \in \sem{T})
 \]
-for example $\NUMBER <: \NUMBER?$ since for any $v$:
+for example $\NUMBER <: \NUMBER?$ since:
 \[
-  \infer{
-    \infer{
-      \infer{
-        v \in \sem{\NUMBER}
-      }{
-        v \in \ssem{\NUMBER}
-      }
-    }{
-      v \in (\ssem{\NUMBER} \cup \ssem{\NIL})
-    }
-  }{
-    v \in \sem{\NUMBER?}
-  }
+  \forall v \st (v \in \sem{\NUMBER}) \fun (v \in \sem{\NUMBER?})
 \]
-More interestingly is the constructive presentation of $S \not<: T$. Normally this is
+Subtyping can be viewed as a dependent function from $\nsem{T}$ to $\nsem{S}$
+
+\begin{lemma}
+  \label{lem:nsubtyp}
+  $(S <: T)$ if and only if $\forall v \st (v \in \nsem{T}) \fun (v \in \nsem{S})$
+\end{lemma}
+\begin{proof}
+  For ``if'', for any $v$, if $v \in \sem{S}$, then by Lemma~\ref{lem:language-dec}
+  either $v \in \sem{T}$ or $v \in \nsem{T}$. In the first case, $v \in \sem{T}$ as needed.
+  In the second case $v \in \nsem{T}$ and so by ``if'' hypothesis $v \in \nsem{S}$,
+  but by Lemma~\ref{lem:language-comp} we have a contradiction from $v \in \sem{S}$ and $v \in \nsem{S}$.
+  So we have established that $S <: T$.
+
+  For ``only if'', for any $v$, if $v \in \nsem{T}$, then by Lemma~\ref{lem:language-dec}
+  either $v \in \sem{S}$ or $v \in \nsem{S}$. 
+  In the first case $v \in \sem{S}$ and so by ``only if'' hypothesis, $v \in \sem{T}$,
+  but by Lemma~\ref{lem:language-comp} we have a contradiction from $v \in \sem{T}$ and $v \in \nsem{T}$.
+  In the second case, $v \in \nsem{s}$ as needed.
+  So we have established that $\forall v \st (v \in \nsem{T}) \fun (v \in \nsem{S})$.
+\end{proof}
+  
+More interestingly is the constructive presentation of \emph{anti-subtyping} $S \not<: T$. Normally this is
 presented negatively, but it can be read constructively since $S \not<: T$ is witnessed by
 a value $v$ where $v \in \sem{S}$ but $v \in \nsem{T}$.
 \[
@@ -805,7 +817,96 @@ Now, by Lemma~\ref{lem:language-comp}, it is direct that $S \not<: T$ is a contr
 Unfortunately, this does not give a decision procedure for
 subtyping, for the usual reason that it tricky to build an algorithm for
 checking semantic subtyping, which requires type normalization~\cite{???}.
+We will return to this in \S\ref{subsec:typnorm}.
 
+It is direct to show that $<:$ is transitive.
+
+\begin{lemma}
+  $(S <: T) \land (T <: U) \fun (S <: U)$
+\end{lemma}
+More interestingly there is a dual property for $\not<:$.
+Classically this is the same as transitivity, just stated in terms of $\not<:$ 
+rather than $<:$. But constructively this is a choice function, that states that if
+$S \not<: U$ then for any $T$ we have a witness for either $S \not<: T$ or $T \not<: U$.
+For example $\NUMBER? \not<: \NUMBER$ (witnessed by $\NIL$), so for a mid-point $\STRING$
+we have $\NIL\in\nsem{\STRING}$ which means we chose the constructive anti-subtype
+$\NUMBER? \not<: \STRING$ witnessed by $\NIL\in\sem{\NUMBER?}$ and $\NIL\in\nsem{\STRING}$.
+
+\begin{lemma}
+  $(S \not<: U) \fun (S \not<: T) \lor (T \not<: U)$
+\end{lemma}
+\begin{proof}
+  $(S \not<: U)$ must have a witness $v$ where
+  $v \in \sem{S}$ and $v \in \nsem{U}$.
+  Now by Lemma~\ref{lem:language-dec} (the decision procedure for type semantics)
+  we either have $v \in \sem{T}$ or $v \in \nsem{T}$. In the first case,
+  $v \in \sem{T}$ and $v \in \nsem{U}$, which witnesses $T \not<: U$.
+  In the second case,
+  $v \in \sem{S}$ and $v \in \nsem{T}$, which witnesses $S \not<: T$.
+  In either case, we have a decision procedure for
+  $(S \not<: T) \lor (T \not<: U)$.
+\end{proof}
+
+We now turn to co- and contra-variant subtyping of functions.
+These come in two flavors: when function types are introduced,
+and when function types are eliminated.
+When a function type is introduced, we
+we check that the arguments respect contravariant subtyping,
+and that the results respect covariant subtyping.
+
+\begin{lemma}
+  \label{lemma:intro-fun-variant}
+  If $S' <: S$ and $T <: T'$
+  then $(S \fun T) <: (S' \fun T')$
+\end{lemma}
+\begin{proof}
+  If $u \in \sem{S \fun T}$
+  then from Fig~\ref{fig:typsem}, either
+  \begin{itemize}
+  \item $u = (a \mapsto (w))$ and $w \in \sem{T}$, so $T <: T'$ implies
+    $w \in \sem{T'}$, and so $(a \mapsto (w)) \in \sem{S' \fun T'}$,
+  \item $u = ((v) \mapsto r)$ and $v \in \nsem{S}$, so $S' <: S$ and Lemma~\ref{lem:nsubtyp} implies
+    $v \in \nsem{S'}$, and so $((v) \mapsto r) \in \sem{S' \fun T'}$,
+  \item $u = (a \mapsto \DIVERGE)$, so $(a \mapsto \DIVERGE) \in \sem{S' \fun T'}$, or
+  \item $u = () \mapsto \CHECK$, so $(() \mapsto \CHECK) \in \sem{S' \fun T'}$.
+  \end{itemize}
+  In any case, $u \in \sem{S' \fun T'}$.
+\end{proof}
+  
+When a function type is eliminated, we
+we check that the arguments reflect contravariant subtyping,
+and that the results reflect covariant subtyping.
+
+\begin{lemma}
+  \label{lemma:elim-fun-variant}
+  If $(S \fun T) <: (S' \fun T')$
+  then $S' <: S$ and $T <: T'$
+\end{lemma}
+\begin{proof}
+  If $v \in \nsem{S}$ then from Fig~\ref{fig:typsem}
+  $((v) \mapsto \CHECK) \in \sem{S \fun T}$, so since 
+  $(S \fun T) <: (S' \fun T')$, we have $((v) \mapsto \CHECK) \in \sem{S' \fun T'}$
+  and so $v \in \nsem{S'}$. Thus, using Lemma~\ref{lem:nsubtyp},
+  we have established $S' <: S$.
+
+  If $w \in \sem{T}$ then from Fig~\ref{fig:typsem}
+  $(() \mapsto (w)) \in \sem{S \fun T}$, so since 
+  $(S \fun T) <: (S' \fun T')$, we have $(() \mapsto (w)) \in \sem{S' \fun T'}$
+  and so $w \in \sem{T'}$. Thus we have established $T <: T'$.
+\end{proof}
+
+Note that these Lemmas rely on pragmatic semantic subtyping.
+Lemma~\ref{lemma:intro-fun-variant} is true for set-theoretic
+semantic subtyping, but Lemma~\ref{lemma:elim-fun-variant}
+is only true for set-theoretic models when $S$ and $T$ are inhabited types.
+In pragmatic sematic subtyping, we do not have special corner cases, in particulr
+Lemma~\ref{lemma:elim-fun-variant} is true for all types,
+and does not require special cases about inhabitance.
+
+
+\subsection{Type normalization}
+\label{subsec:typnorm}.
+  
 \section{Further work}
 
 \bibliographystyle{ACM-Reference-Format}
