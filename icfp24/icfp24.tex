@@ -1,13 +1,13 @@
 % \documentclass[acmsmall,review,screen,anonymous]{acmart}
 \documentclass[acmsmall,review,screen]{acmart}
 
-\acmYear{2025}
-\copyrightyear{2025}
+\acmYear{2024}
+\copyrightyear{2024}
 \acmJournal{PACMPL}
-\acmVolume{9}
-\acmNumber{POPL}
+\acmVolume{7}
+\acmNumber{ICFP}
 \acmArticle{??}
-\acmMonth{1}
+\acmMonth{8}
 
 \expandafter\def\csname @copyrightpermission\endcsname{\raisebox{-1ex}{\includegraphics[height=3.5ex]{cc-by}} This work is licensed under a Creative Commons Attribution 4.0 International License.}
 \expandafter\def\csname @copyrightowner\endcsname{\anon{Roblox}.}
@@ -16,7 +16,6 @@
 \newcommand{\NEVER}{\mathtt{never}}
 \newcommand{\ANY}{\mathtt{any}}
 \newcommand{\UNKNOWN}{\mathtt{unknown}}
-\newcommand{\ERROR}{\mathtt{error}}
 \newcommand{\NIL}{\mathtt{nil}}
 \newcommand{\TRUE}{\mathtt{true}}
 \newcommand{\FALSE}{\mathtt{false}}
@@ -43,8 +42,7 @@
 
 \begin{document}
 
-\title{Gradual Types as Error Suppression}
-\subtitle{A Constructive View of Type Warnings}
+\title{Pragmatic Semantic Subtyping}
 
 \author{Lily Brown}
 \author{Andy Friesen}
@@ -57,24 +55,9 @@
 }
 
 \begin{abstract}
-  This paper presents the view of gradual typing adopted by the
-  \anon{Luau} programming language. Prior work on gradual typing has
-  been based on \emph{type compatibility}, that is a relation on types
-  $T \compat U$ given by contextually closing $T \compat \ANY \compat
-  U$.  Type systems based on type compatibility use $\compat$ rather
-  than type equivalence (or a similar presentation for languages with
-  subtyping). We take a different tack, which is to view type warnings
-  \emph{constructively} as a proof object $\WARN(\Gamma \vdash M : T)$
-  saying that the type derivation $\Gamma \vdash M : T$ should
-  generate a warning. Viewing type warnings constructively allows us
-  to talk about \emph{error suppression}, for example type errors involving the the $\ANY$ type
-  are suppressed, and so this type system is gradual in the
-  sense that developers can explicitly annotate terms with the $\ANY$
-  type to switch off type warnings. This system has the usual ``well-typed
-  programs don't go wrong'' result for program which do not have
-  explicit type annotations with error suppressing types, except this
-  property can now be stated as the presence of $\WARN(\Gamma \vdash M
-  : T)$ rather than the absence of a run-time error. This system has
+  This paper presents the view of subtyping
+  \anon{Luau} programming language.
+  This system has
   been deployed as part of the \anon{Luau} programming language, used
   by \anon{millions of users of Roblox Studio}.
 \end{abstract}
@@ -94,342 +77,6 @@
 
 \section{Introduction}
 
-\subsection{Gradual Typing}
-
-The aim of \emph{gradual
-typing}~\cite{ST06:GradualTyping,ST07:GradualTyping} is to allow a
-code base to migrate from being untyped to being typed.  This is
-achieved by introducing a type $\ANY$ (also called $?$ or $*$) which
-is used as the type of a expression which is not subject to type
-checking. For example, in \anon{Luau}, a variable can be declared as
-having type $\ANY$, which is not subject to type checking:
-\begin{verbatim}
-  local x : any = "hi"
-  print(math.abs(x))
-\end{verbatim}
-This program generates a run-time error, but because \verb|x| is
-declared has having type $\ANY$, no type error is generated.
-Similarly, any expression can be cast to having type $\ANY$, which is
-not subject to type checking:
-\begin{verbatim}
-  print(math.abs("hi" :: any))
-\end{verbatim}
-Again, this program generates a run-time error, but because \verb|"hi"| is
-cast to  having type $\ANY$, no type error is generated.
-
-Prior work on gradual typing has been based on \emph{type
-compatibility}, that is a relation on types $T \compat U$ given by
-contextually closing $T \compat \ANY \compat U$.  Type systems based
-on type compatibility use $\compat$ rather than type equivalence (or a
-similar presentation for languages with subtyping).
-
-For example, the type rules for function application
-in~\cite{ST06:GradualTyping} are:
-\[
-    \infer{
-      \Gamma \vdash M : \ANY \\
-      \Gamma \vdash N : U
-    }{
-      \Gamma \vdash M(N) : \ANY
-    }
-    (\textsc{GApp}1)
-\qquad
-    \infer{
-      \Gamma \vdash M : (S \fun T) \\
-      \Gamma \vdash N : U \\
-      S \compat U
-    }{
-      \Gamma \vdash M(N) : T
-    }
-    (\textsc{GApp}2)
-\]
-which requires that the argument type is \emph{compatible} with
-(rather than equal to) to the function source type.
-For example:
-\[
-    \infer{
-      \Gamma \vdash \mathtt{math.abs} : (\NUMBER \fun \NUMBER) \\
-      \Gamma \vdash x : \ANY \\
-      \NUMBER \compat \ANY
-    }{
-      \Gamma \vdash \mathtt{math.abs}(x) : \NUMBER
-    }
-\]
-The problem we discovered in implementing gradual typing on top of type
-compatibility is that it is a source of subtle bugs, because the type
-system is very sensitive as to when type equality is used rather than
-type compatibility. For example comparing two type rules:
-\[
-    \infer{
-      \Gamma \vdash M : F \\
-      \Gamma \vdash N : U \\
-      F = (S \fun T) \\
-      S \compat U
-    }{
-      \Gamma \vdash M(N) : T
-    }
-    (\textsc{GApp}2')
- \qquad
-    \infer{
-      \Gamma \vdash M : F \\
-      \Gamma \vdash N : U \\
-      F \compat (S \fun T) \\
-      S \compat U
-    }{
-      \Gamma \vdash M(N) : T
-    }
-    (\textsc{GApp}2'')
-\]
-These rules only differ in whether they use type compatibility
-rater than equality, but they have very different semantics. Rule
-$\textsc{GApp}2'$ is the same as $\textsc{GApp}2'$ (and so is sound)
-but using $\textsc{GApp}2''$ we can derive:
-\[
-    \infer{
-      \Gamma \vdash \mathtt{math.abs} : (\NUMBER \fun \NUMBER) \\
-      \Gamma \vdash x : \STRING \\
-      (\NUMBER \fun \NUMBER) \compat (\ANY \fun \NUMBER) \\
-      \ANY \compat \STRING \\
-    }{
-      \Gamma \vdash \mathtt{math.abs}(x) : \NUMBER
-    }
-\]
-which is unsound. Problems like this come down eventually to the fact
-that $\compat$ is not transitive, and in the presence of other
-features such as unification and subtyping gave rise to subtle bugs
-(for example code that assumed that unification solved for type
-equality rather than compatibility).
-
-\subsection{Error Suppressing Types}
-
-There as been a long history of improving type errors reported to
-users, going back to the
-1980s~\cite{Wan86:FindingSource,JW86:MaximumFlow}.
-One source of pain in type error reporting is \emph{cascading}
-type errors, for example:
-\begin{verbatim}
-  local x = "hi"
-  local y = math.abs(x)
-  local z = string.lower(y)
-\end{verbatim}
-In this case \verb|math.abs(x)| should generate a type error, since
-the type $\STRING$ is inferred for \verb|x|, and the type of
-\verb|math.abs| is $\NUMBER \fun \NUMBER$.  It is not obvious whether
-a type error should be generated for \verb|string.lower(y)|. If the
-type $\NUMBER$ is inferred for \verb|y|, then an error should be
-reported, since the type of \verb|string.lower| is $\STRING \fun \STRING$.
-But this will not be the best user experience, since this will
-give a common experience of multiple cascading type errors, of which only
-the first error is genuine.
-
-One heuristic to eliminate cascading errors is to mark the type of any
-expression which causes a type error to be emitted as \emph{error
-suppressing}. Error suppressing types are then used to percolate the
-information that a type error has already been generated, and so avoid
-cascading type errors.
-
-For example, in \anon{Luau}, a type $\ERROR$ is introduced, and any
-type $T$ which is a supertype of $\ERROR$ is considered to be error
-suppressing. For instance, the types inferred for the above program
-are:
-\begin{verbatim}
-  local x : string = "hi"
-  local y : number | error = math.abs(x)
-  local z : string | error = string.lower(y)
-\end{verbatim}
-Since $\NUMBER \UNION \ERROR$ is an error suppressing type,
-\verb|string.lower(y)| will not report a type error.
-
-Error suppressing types as a technique for minimizing cascading type
-errors appears to be folklore, for example it is implemented in Typed
-Racket~\cite{TH08:ErrorHandling}, but does not appear to have been
-academically published.
-
-\subsection{Gradual Typing via Error Suppressing Types}
-
-At this point a reader might guess where this paper is going.  Gradual
-types are well established research area which allows programmers
-to type expressions with type $\ANY$ to suppress type errors.  Error
-suppressing types are well established folklore which
-allows type inference to type expressions with error suppressing types
-to suppress cascading type errors.
-
-The connection between these two areas is pretty obvious, but has not
-been made before. If $\ANY$ is an error suppressing type, then
-gradual typing is very similar to error suppression, but does
-not require the non-transitive type compatibility relation.
-
-In \anon{Luau}, the use of error suppressing types explains why
-\anon{Luau}, in common with TypeScript~\cite{TypeScript}, has both an
-error suppressing type $\ANY$ and a non-error suppressing type
-$\UNKNOWN$. $\ANY$ is the top type, and $\UNKNOWN$ is the top
-non-error-suppressing type. We consider $\ANY$ to be equivalent to
-$\UNKNOWN \UNION \ERROR$.
-
-\subsection{Constructive Type Errors}
-
-Error suppressing types is a folklore implementation technique
-for suppressing cascading type errors. In this paper we present
-a formalization as a constructive model of type errors. We do this by
-separating out type derivations from type errors.
-
-For example, one traditional way to present the type rule for function
-application is:
-\[
-  \infer{
-    \Gamma \vdash M : T \\
-    \Gamma \vdash N : U \\
-    U <: \SRC(T)
-  }{
-    \Gamma \vdash M(N) : \APPLY(T,U)
-  }
-\]
-using functions to calculate the domain of a function $\SRC(T)$, for example
-following~\cite[\S5.2]{Ken21:DownDirty}:
-\[
-  \SRC(S \fun T) = S
-\quad
-  \SRC(S \cap T) = \SRC(S) \cup \SRC(T)
-\quad
-  \cdots
-\]
-and to calculate the result type of applying a function $\APPLY(T,U)$,
-for example following~\cite[\S5.3]{Ken21:DownDirty}:
-\[ 
-  \APPLY(S \fun T, U) =
-  \left\{\begin{array}{ll}
-    T & \text{if } U <: T \\
-    \ANY & \text{otherwise}
-  \end{array}\right.
-\quad
-  \APPLY(S \cap T, U) = \APPLY(S, U) \cap \APPLY(T, U)
-\quad
-  \cdots
-\]
-(The details of this function are spelled out in Section~\ref{sec:semsub}.)
-
-This formulation is fine if is one is only interested in well typed programs,
-and in not in the behavior of badly typed programs. For example,
-the classic ``well typed programs don't go wrong'' can be stated as:
-\[
-  (M \rightarrow^* M') \fun
-  (\RUNTIMEERR(M')) \fun
-  \neg(\emptyset \vdash M : T)
-\]
-(for an appropriate definition of $\RUNTIMEERR(M')$). Now, this does not have
-a constructive model of type warnings, since we are only considering
-badly typed programs as ones where $\neg(\emptyset \vdash M : T)$.
-
-In this paper, we separate type derivations from their type errors.
-This is done by explicitly tracking the derivation tree for typing,
-for example:
-\[
-  \infer{
-    D_1 : (\Gamma \vdash M : T) \\
-    D_2 : (\Gamma \vdash N : U)
-  }{
-    \APP(D_1, D_2) : (\Gamma \vdash M(N) : \APPLY(T,U))
-  }
-\]
-which allows us to define which type derivations generate warnings,
-for example there are three ways a warning can be generated from a
-function application $M(N)$, bubbling up a warning from $M$ or $N$, or
-by a failure of subtyping:
-\[
-  \infer{
-    \WARN(D_1)
-  }{
-    \WARN(\APP(D_1, D_2))
-  }
-\quad
-  \infer{
-    \WARN(D_2)
-  }{
-    \WARN(\APP(D_1, D_2))
-  }
-\quad
-  \infer{
-    U \not<: \SRC(T)
-  }{
-    \WARN(\APP(D_1, D_2))
-  }
-\]
-This is based on a constructive framing of failure of subtyping,
-fleshed out in Section~\ref{sec:semsub}:
-\[
-\infer{
-    v \in \sem{T} \\
-    v \in \nsem{U} \\
-  }{
-    T \not<: U
-  }
-\]
-Now, there are two important results about this presentation of
-constructive type errors. The first is \emph{infallible typing},
-that every program can be type checked in every context:
-\[
-  \forall \Gamma, M \st
-  \exists T \st
-  (\Gamma \vdash M : T)
-\]
-(We write $\TYPEOF(\Gamma, M)$ for this derivation tree.)
-The second is that we can state ``well typed programs don't go wrong''
-constructively:
-\[
-  (M \rightarrow^* M') \fun
-  (\RUNTIMEERR(M')) \fun
-  \WARN(\TYPEOF(\emptyset, M))
-\]
-Since this is phased constructively,
-Curry Howard means we can think of this statement in two ways:
-\begin{itemize}
-  \item as a proof that ``well typed programs don't go wrong''
-  \item as a time-travel debugger,
-    that for any execution $(M \rightarrow^* M')$
-    where $M'$ has a run-time error,
-    it can be run back in time to find a root cause type error for $M'$.
-\end{itemize}
-Constructive type errors can be easily adapted to error suppressing
-types, for example we only report a failure of subtyping when both the
-type of the function and the type of argument are not error suppressing:
-\[
-\infer{
-    \ERROR \not<: T \\
-    \ERROR \not<: U \\
-    U \not<: \SRC(T)
-  }{
-    \WARN(\APP(D_1, D_2))
-  }
-\]
-Now, in general this breaks type soundness, because if every type is
-$\ANY$ then all type errors are suppressed. But we can show that in
-the case of a program in which no types are error suppressing,
-``well typed programs don't go wrong''.
-
-\subsection{Contributions}
-
-In summary, this paper combines two well-explored areas:
-\begin{itemize}
-  \item gradual types, and
-  \item error suppressing types.
-\end{itemize}
-The new contributions of this paper are:
-\begin{itemize}
-  \item combining gradual types and error suppressing types,
-  \item formalizing error suppressing types as constructive type errors,
-  \item presenting a new \emph{pragmatic} model of semantic subtyping, and
-  \item showing type soundness for programs which do not contain error
-    suppressing types.
-\end{itemize}
-The results are mechanized in Agda~\anon{\cite{BJ23:agda-typeck}}.
-The concepts in this paper are released as part of
-\anon{Roblox Studio, used by millions of creators}.
-
-\section{Pragmatic Semantic Subtyping}
-\label{sec:semsub}
-
-\subsection{What is pragmatic semantic subtyping}
-
 In \anon{Luau}, we use a variant of semantic
 subtyping~\cite{GF05:GentleIntroduction,FCB08:SemanticSubtyping,Ken21:DownDirty}. The
 important properties of semantic subtyping are:
@@ -440,7 +87,7 @@ important properties of semantic subtyping are:
 \item union and intersection types are interpreted as set union and intersection, and
 \item subtyping $T <: U$ is interpreted as $\sem{T} \subseteq \sem{U}$.
 \end{itemize}
-In addition, the off-the-shelf presentation of semantic subtyping is \emph{set theoretic}~\cite[\S2.5]{GF05:GentleIntroduction}:
+The off-the-shelf presentation of semantic subtyping is \emph{set theoretic}~\cite[\S2.5]{GF05:GentleIntroduction}:
 \[
   \sem{T_1} \subseteq \sem{T_2} \mbox{ if and only if }
   \mathcal{E}\sem{T_1} \subseteq \mathcal{E}\sem{T_2}
@@ -450,9 +97,10 @@ where the most important case for $\mathcal{E}\sem{T}$ is function types:
   \mathcal{E}\sem{S \fun T} = \mathcal{P}(\Val^2 \setminus (\sem{S} \times (\Val \setminus \sem{T})))
 \]
 The set theoretical requirement has some consequences:
-\begin{itemize}
   
-\item All functions types $(\NEVER \fun T)$ are identified, since:
+\paragraph{All functions types $(\NEVER \fun T)$ are identified}
+
+Consider
   \[\begin{array}{l}
     \mathcal{E}\sem{\NEVER \fun T_1} \\\quad
      = \mathcal{P}(\Val^2 \setminus (\sem{\NEVER} \times (\Val \setminus \sem{T_1}))) \\\quad
@@ -480,7 +128,8 @@ The set theoretical requirement has some consequences:
   so we have to accept that in a set-theoretic model, the type rule for function
   application has corner cases for uninhabited types.
 
-\item Union does not distributed through function types.
+\paragraph{Union does not distributed through function types}
+  
   Semantic subtyping gives a natural model of overloaded functions as intersections of arrows,
   for example the \anon{Roblox} API for matrices include an overloaded function
   which supports multiplication of both 1D and 2D matrices:
@@ -514,14 +163,18 @@ The set theoretical requirement has some consequences:
   \end{array}\]
   This is why type normalization for function types in set-theoretic models
   uses a conjunctive normal form of unions of intersections of functions e.g.~\cite[\S4.1.2]{Ken21:DownDirty}.
+
+
+\paragraph{Set-theoretc mode support negatived types}
   
-\end{itemize}
 In addition, \anon{Luau} does not support negation of all types, but
 only negation of \emph{test types}~\cite{CLNL22:OnTypeCases}, which
 simplifies the model, by not requiring arbitrary type negation.  In
 particular, since the model does not support negation of function
 types, the normal form for function types is just overload functions,
 not combinations of positive and negative function types.
+
+\paragraph{Concusions of this paper}
 
 In summary there is a trade-off in semantic subtyping:
 \begin{itemize}
@@ -536,12 +189,16 @@ In summary there is a trade-off in semantic subtyping:
 \end{itemize}
 \anon{Luau} chooses to adopt a pragmatic semantic subtyping model.
 
+This paper shows how \anon{Luau} pragmatic model is defined,
+and how it supports benefits of pragmic models.
+
+\section{Semantic subtyping for \anon{Luau}}
 \subsection{Semantic values for \anon{Luau}}
 
 \begin{figure}
   
 \[\begin{array}{rcl}
-  v & ::= & s \mid \ERROR \mid (a \mapsto r) \\
+  v & ::= & s \mid (a \mapsto r) \\
   a & ::= & () \mid (v) \\
   r & ::= & \DIVERGE \mid \CHECK \mid (v) 
 \end{array}\]
@@ -550,7 +207,10 @@ In summary there is a trade-off in semantic subtyping:
 
 \end{figure}
 
-In this presentation, we will ignore the details of scalar types,
+In this presentation, we presect the minimal core of \anon{Luau},
+which supports scalars and functions. This presentation ingores
+tables, mutable features, and object obects.
+We will ignore the details of scalar types,
 and assume that:
 \begin{itemize}
 
@@ -563,22 +223,20 @@ and assume that:
 \item each scalar type $s$ has a set of scalar values $\ssem{s}$, such as:
   \[
     \ssem{\NIL} = \{ \NIL \} \quad
-v    \ssem{\BOOLEAN} = \{ \TRUE, \FALSE \} \quad
+    \ssem{\BOOLEAN} = \{ \TRUE, \FALSE \} \quad
     \ssem{\NUMBER} = \{ 0, 1, \dots \} \quad \cdots
   \]
   
 \end{itemize}
 The types we are considering are:
 \[
-S, T ::= b \mid \ERROR \mid \ANY \mid \NEVER \mid S \fun T \mid S \cap T \mid S \cup T
+S, T ::= b \mid \ANY \mid \NEVER \mid S \fun T \mid S \cap T \mid S \cup T
 \]
 which are:
 \begin{itemize}
 
 \item the \emph{scalar types} $b$
   
-\item the \emph{error-suppressing type} $\ERROR$,
-
 \item the \emph{anything type} $\ANY$,
 
 \item the \emph{uninhabited type} $\NEVER$,
@@ -595,11 +253,7 @@ of \emph{semantic values}, given by the grammar $v$ of Figure~\ref{fig:semval}.
 Semantic values are:
 \begin{itemize}
   
-\item \emph{scalar values} $s$,
-
-\item \emph{error values} $\ERROR$,
-  witnessing a error-suppressing type,
-  and
+\item \emph{scalar values} $s$, and
 
 \item \emph{function values} $a \mapsto r$,
   modeling a function that can can map an argument $a$ to
@@ -611,7 +265,6 @@ For example:
   
 \item $\TRUE$ and $\FALSE$ are values in $\BOOLEAN$,
 \item $\TRUE$ and $\FALSE$ and $\NIL$ are values in the optional type $\BOOLEAN \cup \NIL$,
-\item $\TRUE$ and $\FALSE$ and $\ERROR$ are values in the error-suppressing type $\BOOLEAN \cup \ERROR$,
   and 
 \item $(\TRUE) \mapsto (\FALSE)$ is a value in the function type $\BOOLEAN \fun \BOOLEAN$.
 
@@ -682,7 +335,6 @@ system, and can turn the semantics of types, from which semantic subtyping follo
   
 \[\begin{array}{rcl}
   \sem{b} & = & \ssem{b} \\
-  \sem{\ERROR} & = & \{ \ERROR \} \\
   \sem{\ANY} & = & \mathcal{D} \\
   \sem{\NEVER} & = & \emptyset \\
   \sem{S \fun T} & = & \{ a \mapsto (w) \mid w \in \sem{T} \} \cup {} \\
@@ -732,8 +384,6 @@ Fig~\ref{fig:typnsem}.
 
 \[\begin{array}{rcl}
   \nsem{b} & = & \nssem{b} \\
-  \nsem{\ERROR} & = & \{ s \} \cup {} \\
-              && \{ a \mapsto r \} \\
   \nsem{\ANY} & = & \emptyset \\
   \nsem{\NEVER} & = & \mathcal{D} \\
   \nsem{S \fun T} & = & \{ s \} \cup {} \\
@@ -847,6 +497,8 @@ $\NUMBER? \not<: \STRING$ witnessed by $\NIL\in\sem{\NUMBER?}$ and $\NIL\in\nsem
   $(S \not<: T) \lor (T \not<: U)$.
 \end{proof}
 
+\subsection{Co- and contra-variance of subtyping for fuctions}
+
 We now turn to co- and contra-variant subtyping of functions.
 These come in two flavors: when function types are introduced,
 and when function types are eliminated.
@@ -903,7 +555,9 @@ In pragmatic sematic subtyping, we do not have special corner cases, in particul
 Lemma~\ref{lemma:elim-fun-variant} is true for all types,
 and does not require special cases about inhabitance.
 
-Finally, we turn to distitibue cases where intersection and union disturiute
+\subsection{Distritution of intersection and union over fuctions}
+
+Finally, we turn to cases where intersection and union disturiute
 through functions. Since \anon{Luau} uses intersections of functions as
 types for overloaded functions, it is unsupringing that interesection does
 not in general distribute through functions. For example:
