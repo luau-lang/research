@@ -903,6 +903,48 @@ In pragmatic sematic subtyping, we do not have special corner cases, in particul
 Lemma~\ref{lemma:elim-fun-variant} is true for all types,
 and does not require special cases about inhabitance.
 
+Finally, we turn to distitibue cases where intersection and union disturiute
+through functions. Since \anon{Luau} uses intersections of functions as
+types for overloaded functions, it is unsupringing that interesection does
+not in general distribute through functions. For example:
+\[
+  (\BOOLEAN\fun\BOOLEAN) \cap (\NUMBER\fun\NUMBER)
+\]
+does not distribute to:
+\[
+  (\BOOLEAN\cup\NUMBER)\fun(\BOOLEAN\cap\NUMBER)
+\]
+For example:
+\[\begin{array}{l}
+  (\FALSE\mapsto\TRUE) \in \sem{(\BOOLEAN\fun\BOOLEAN) \cap (\NUMBER\fun\NUMBER)} \\
+  (\FALSE\mapsto\TRUE) \in \nsem{(\BOOLEAN\cup\NUMBER)\fun(\BOOLEAN\cap\NUMBER)}
+\end{array}\]
+is a witness for:
+\[\begin{array}{l}
+  ((\BOOLEAN\fun\BOOLEAN) \cap (\NUMBER\fun\NUMBER)) \\\quad
+  \not<:
+  ((\BOOLEAN\cup\NUMBER)\fun(\BOOLEAN\cap\NUMBER))
+\end{array}\]
+Now in general we can not distribute intersetion through functions,
+on both the left and right, but we can distrutue on just left, and just right.
+This is similar to the situation with premonids categories~\cite{??} which
+are functorial on both sides, but are not binary functorials.
+
+\begin{lemma} \mbox{}
+  \begin{enumerate}
+  \item $\sem{(S_1 \fun T) \cap (S_2 \fun T)} =
+    \sem{(S_1 \cup S_2) \fun T}$
+  \item $\sem{(S \fun T_1) \cap (S \fun T_2)} =
+   \sem{S \fun (T_1 \cap T_2)}$
+  \end{enumerate}
+\end{lemma}
+
+In contract, union does distructibute over fuctions.
+
+\begin{lemma}
+  $\sem{(S_1 \fun T_1) \cup (S_2 \fun T_2)} =
+   \sem{(S_1 \cap S_2) \fun (T_1 \cup T_2)}$
+\end{lemma}
 
 \subsection{Type normalization}
 \label{subsec:typnorm}.
