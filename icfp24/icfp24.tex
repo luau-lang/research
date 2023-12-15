@@ -183,9 +183,8 @@ Consider
   CFrame.__mul : ((CFrame, CFrame) -> CFrame) & ((CFrame, Vector3) -> Vector3)
 \end{verbatim}
   Overloaded functions are a key part of the \anon{Roblox} API, and we might expect that
-  all function types can be presented as overloaded functions. We can do this if we can present
-  unions of overloaded functions as overloaded functions. Now, union distributes through intersection,
-  so all that is required is to distribute union through arrow:
+  all function types can be presented as overloaded functions (that is intersections of arrows). We can do 
+  that it we can distribute union through arrow:
   \[
     \sem{(S_1 \fun T_1) \cup (S_2 \fun T_2)}
     =
@@ -207,8 +206,7 @@ Consider
   This is why type normalization for function types in set-theoretic models
   uses a conjunctive normal form of unions of intersections of functions e.g.~\cite[\S4.1.2]{Ken21:DownDirty}.
 
-
-\paragraph{Set-theoretc mode support negatived types}
+\paragraph{Set-theoretic mode support negatived types}
   
 In addition, \anon{Luau} does not support negation of all types, but
 only negation of \emph{test types}~\cite{CLNL22:OnTypeCases}, which
@@ -217,7 +215,7 @@ particular, since the model does not support negation of function
 types, the normal form for function types is just overload functions,
 not combinations of positive and negative function types.
 
-\paragraph{Concusions of this paper}
+\paragraph{Conclusions of this paper}
 
 In summary there is a trade-off in semantic subtyping:
 \begin{itemize}
@@ -233,7 +231,7 @@ In summary there is a trade-off in semantic subtyping:
 \anon{Luau} chooses to adopt a pragmatic semantic subtyping model.
 
 This paper shows how \anon{Luau} pragmatic model is defined,
-and how it supports benefits of pragmic models.
+and how it supports benefits of pragmatic models.
 
 \section{Semantic subtyping for \anon{Luau}}
 \subsection{Semantic values for \anon{Luau}}
@@ -250,9 +248,9 @@ and how it supports benefits of pragmic models.
 
 \end{figure}
 
-In this presentation, we presect the minimal core of \anon{Luau},
-which supports scalars and functions. This presentation ingores
-tables, mutable features, and object obects.
+In this presentation, we present the minimal core of \anon{Luau},
+which supports scalars and functions. This presentation ignores
+tables, mutable features, and object objects.
 We will ignore the details of scalar types,
 and assume that:
 \begin{itemize}
@@ -280,9 +278,9 @@ which are:
 
 \item the \emph{scalar types} $b$
   
-\item the \emph{anything type} $\UNKNOWN$,
+\item the \emph{top type} $\UNKNOWN$,
 
-\item the \emph{uninhabited type} $\NEVER$,
+\item the \emph{bottom type} $\NEVER$,
 
 \item a \emph{function} type $S \fun T$,
 
@@ -448,13 +446,19 @@ presentation of $\mathcal{D} \setminus \sem{S \cap T}$.
   \label{lem:language-comp}
   $(v \in \nsem{T})$ if and only if $(v \not\in \sem{T})$.
 \end{lemma}
-
+\begin{proof}
+  An proof by injunction on $T$ showings that $\sem{T}$ is the
+  negative of $\nsem{T}$.
+\end{proof}
 Moreover there is a decision procedure for $v \in \sem{T}$ or $v \in \nsem{T}$.
 
 \begin{lemma}
   \label{lem:language-dec}
   $(v \in \sem{T}) \lor (v \in \nsem{T})$.
 \end{lemma}
+\begin{proof}
+  An proof by injunction on $T$, that for any $v$, either $v\in\sem{T}$ or $v\in\nsem{T}$.
+\end{proof}
 
 \subsection{Properties of semantic subtyping}
 
@@ -506,7 +510,13 @@ Now, by Lemma~\ref{lem:language-comp}, it is direct that $S \not<: T$ is a contr
 \begin{lemma}
   $(S \not<: T) \fun \neg(S <: T)$
 \end{lemma}
-
+\begin{proof}
+  The is a witness for $S \not<: T$, $v\in\sem{S}$ and $v\in\nsem{T}$,
+  and so $S <: T$ and $v\in\sem{S}$ gives $v\in\sem{T}$.
+  So Lemma~\ref{lem:language-comp} gives $v\in\nsem{T}$ and $v\in\sem{T}$
+  are a contradiction is required.
+\end{proof}
+  
 Unfortunately, this does not give a decision procedure for
 subtyping, for the usual reason that it tricky to build an algorithm for
 checking semantic subtyping, which requires type normalization~\cite{???}.
@@ -517,6 +527,11 @@ It is direct to show that $<:$ is transitive.
 \begin{lemma}
   $(S <: T) \land (T <: U) \fun (S <: U)$
 \end{lemma}
+\begin{proof}
+  The there must be $f$ maps an argument with type $v \in\sem {S}$ to a result with type $v \in\sem {T}$,
+  and there must be $g$ maps an argument with type $v \in\sem {T}$ to a result with type $v \in\sem {U}$.
+  So $f;g$ maps an argument with type $v \in\sem {S}$ to a result with type $v \in\sem {U}$.
+\end{proof}
 More interestingly there is a dual property for $\not<:$.
 Classically this is the same as transitivity, just stated in terms of $\not<:$ 
 rather than $<:$. But constructively this is a choice function, that states that if
@@ -540,7 +555,7 @@ $\NUMBER? \not<: \STRING$ witnessed by $\NIL\in\sem{\NUMBER?}$ and $\NIL\in\nsem
   $(S \not<: T) \lor (T \not<: U)$.
 \end{proof}
 
-\subsection{Co- and contra-variance of subtyping for fuctions}
+\subsection{Co- and contra-variance of subtyping for functions}
 
 We now turn to co- and contra-variant subtyping of functions.
 These come in two flavors: when function types are introduced,
@@ -594,15 +609,15 @@ Note that these Lemmas rely on pragmatic semantic subtyping.
 Lemma~\ref{lemma:intro-fun-variant} is true for set-theoretic
 semantic subtyping, but Lemma~\ref{lemma:elim-fun-variant}
 is only true for set-theoretic models when $S$ and $T$ are inhabited types.
-In pragmatic sematic subtyping, we do not have special corner cases, in particulr
+In pragmatic semantic subtyping, we do not have special corner cases, in particular
 Lemma~\ref{lemma:elim-fun-variant} is true for all types,
 and does not require special cases about inhabitance.
 
-\subsection{Distritution of intersection and union over fuctions}
+\subsection{Distribution of intersection and union over functions}
 
-Finally, we turn to cases where intersection and union disturiute
+Finally, we turn to cases where intersection and union distribute
 through functions. Since \anon{Luau} uses intersections of functions as
-types for overloaded functions, it is unsupringing that interesection does
+types for overloaded functions, it is unsurprising that intersection does
 not in general distribute through functions. For example:
 \[
   (\BOOLEAN\fun\BOOLEAN) \cap (\NUMBER\fun\NUMBER)
@@ -622,9 +637,9 @@ is a witness for:
   \not<:
   ((\BOOLEAN\cup\NUMBER)\fun(\BOOLEAN\cap\NUMBER))
 \end{array}\]
-Now in general we can not distribute intersetion through functions,
-on both the left and right, but we can distrutue on just left, and just right.
-This is similar to the situation with premonids categories~\cite{??} which
+Now in general we can not distribute intersection through functions,
+on both the left and right, but we can distribute on just left, and just right.
+This is similar to the situation with premonoids categories~\cite{??} which
 are functorial on both sides, but are not binary functorials.
 
 \begin{lemma} \mbox{}
@@ -635,8 +650,69 @@ are functorial on both sides, but are not binary functorials.
    \sem{S \fun (T_1 \cap T_2)}$
   \end{enumerate}
 \end{lemma}
+\begin{proof} \mbox{}
+  \begin{enumerate}
+    \item[(1$\Rightarrow$)]
+  If $u \in \sem{S_1 \fun T} \cap \sem{S_2 \fun T}$,
+  then from Fig~\ref{fig:typsem}, either
+  \begin{itemize}
+  \item $u = (a \mapsto (w))$ and $w \in \sem{T}$, 
+    and so $(a \mapsto (w)) \in \sem{(S_1 \cup S_2) \fun T}$,
+  \item $u = ((v) \mapsto r)$, $v \in \nsem{S_1}$
+    and $v \in \nsem{S_2}$,
+    so $v \in \nsem{S_1 \cup S_2}$,
+    and so $((v) \mapsto r) \in \sem{(S_1 \cup S_2) \fun T}$,
+  \item $u = (a \mapsto \DIVERGE)$, so $(a \mapsto \DIVERGE) \in \sem{(S_1 \cup S_2) \fun T}$, or
+  \item $u = () \mapsto \CHECK$, so $(() \mapsto \CHECK) \in \sem{(S_1 \cup S_2) \fun T}$.
+  \end{itemize}
+  In any case, $u \in \sem{(S_1 \cup S_2) \fun T}$.
 
-In contract, union does distructibute over fuctions.
+    \item[(1$\Leftarrow$)]
+  If $u \in \sem{(S_1 \cup S_2) \fun T}$,
+  then from Fig~\ref{fig:typsem}, either
+  \begin{itemize}
+  \item $u = (a \mapsto (w))$ and $w \in \sem{T}$, 
+    and so $(a \mapsto (w)) \in \sem{S_1 \fun T} \cap \sem{S_2 \fun T}$,
+  \item $u = ((v) \mapsto r)$, $v \in \nsem{S_1} \cap \nsem{S_2}$
+    and so $((v) \mapsto r) \in \sem{S_1 \fun T} \cap \sem{S_2 \fun T}$,,
+  \item $u = (a \mapsto \DIVERGE)$, so $(a \mapsto \DIVERGE) \in \sem{S_1 \fun T} \cap \sem{S_2 \fun T}$, or
+  \item $u = () \mapsto \CHECK$, so $(() \mapsto \CHECK) \in \sem{S_1 \fun T} \cap \sem{S_2 \fun T}$.
+  \end{itemize}
+  In any case, $u \in \sem{S_1 \fun T} \cap \sem{S_2 \fun T}$.
+
+    \item[(2$\Rightarrow$)]
+  If $u \in \sem{S \fun T_1} \cap \sem{S \fun T_2}$,
+  then from Fig~\ref{fig:typsem}, either
+  \begin{itemize}
+  \item $u = (a \mapsto (w))$, $w \in \sem{T_1}$ and $w \in \sem{T_2}$, 
+    and so $(a \mapsto (w)) \in \sem{S \fun (T_1 \cap T_2)}$,
+  \item $u = ((v) \mapsto r)$ and $v \in \nsem{S}$
+    so $v \in \nsem{S}$,
+    and so $((v) \mapsto r) \in \sem{S \fun (T_1 \cap T_2)}$,
+  \item $u = (a \mapsto \DIVERGE)$, so $(a \mapsto \DIVERGE) \in \sem{S \fun (T_1 \cap T_2)}$, or
+  \item $u = () \mapsto \CHECK$, so $(() \mapsto \CHECK) \in \sem{S \fun (T_1 \cap T_2)}$.
+  \end{itemize}
+  In any case, $u \in \sem{(S_1 \cup S_2) \fun T}$.
+
+    \item[(2$\Rightarrow$)]
+  If $u \in \sem{(S_1 \cup S_2) \fun T}$,
+  then from Fig~\ref{fig:typsem}, either
+  \begin{itemize}
+  \item $u = (a \mapsto (w))$, $w \in \sem{T_1}$ and $w \in \sem{T_2}$, 
+    and so $(a \mapsto (w)) \in \sem{S \fun T_1} \cap \sem{S \fun T_2}$,
+  \item $u = ((v) \mapsto r)$ and $v \in \nsem{S}$
+    so $v \in \nsem{S}$,
+    and so $((v) \mapsto r) \in \sem{S \fun T_1} \cap \sem{S \fun T_2}$,
+  \item $u = (a \mapsto \DIVERGE)$, so $(a \mapsto \DIVERGE) \in \sem{S \fun T_1} \cap \sem{S \fun T_2}$, or
+  \item $u = () \mapsto \CHECK$, so $(() \mapsto \CHECK) \in \sem{S \fun T_1} \cap \sem{S \fun T_2}$.
+  \end{itemize}
+  In any case, $u \in \sem{S \fun T_1} \cap \sem{S \fun T_2}$.
+  
+  \end{enumerate}
+  This provides cases.
+\end{proof}
+
+In contract, union does distribute over functions.
 
 \begin{lemma}
   $\sem{(S_1 \fun T_1) \cup (S_2 \fun T_2)} =
