@@ -390,7 +390,6 @@ system, and can turn the semantics of types, from which semantic subtyping follo
 
 \end{figure}
 
-
 The semantics of \anon{Luau} types are given in Fig~\ref{fig:typsem}.
 This semantics is presented mechanically in Agda in~\anon{\cite{BJ23:agda-typeck}},
 and we will give the most important results here.
@@ -718,6 +717,67 @@ In contract, union does distribute over functions.
   $\sem{(S_1 \fun T_1) \cup (S_2 \fun T_2)} =
    \sem{(S_1 \cap S_2) \fun (T_1 \cup T_2)}$
 \end{lemma}
+\begin{proof} \mbox{}
+  \begin{enumerate}
+    
+  \item[($\Rightarrow$)]
+  If $u \in \sem{S_1 \fun T_1} \cup \sem{S_2 \fun T_2}$,
+  then from Fig~\ref{fig:typsem}, either
+  \begin{itemize}
+    
+  \item $u = (a \mapsto (w))$, $w \in \sem{T_1}$, 
+    and so $(a \mapsto (w)) \in \sem{(S_1 \cap S_2) \fun (T_1 \cup T_2)}$,
+
+  \item $u = (a \mapsto (w))$, $w \in \sem{T_2}$, 
+    and so $(a \mapsto (w)) \in \sem{(S_1 \cap S_2) \fun (T_1 \cup T_2)}$,
+
+  \item $u = ((v) \mapsto r)$, $v \in \nsem{S_1}$
+    and so $((v) \mapsto r) \in \sem{(S_1 \cap S_2) \fun (T_1 \cup T_2)}$,
+
+  \item $u = ((v) \mapsto r)$, $v \in \nsem{S_2}$
+    and so $((v) \mapsto r) \in \sem{(S_1 \cap S_2) \fun (T_1 \cup T_2)}$,
+
+  \item $u = (a \mapsto \DIVERGE)$, so $(a \mapsto \DIVERGE) \in \sem{(S_1 \cap S_2) \fun (T_1 \cup T_2)}$, or
+    
+  \item $u = () \mapsto \CHECK$, so $(() \mapsto \CHECK) \in \sem{(S_1 \cap S_2) \fun (T_1 \cup T_2)}$.
+
+  \end{itemize}
+  In any case, $u \in \sem{(S_1 \cap S_2) \fun (T_1 \cup T_2)}$.
+
+  \item[($\Leftarrow$)]
+  If $u \in \sem{(S_1 \cap S_2) \fun (T_1 \cup T_2)}$,
+  then from Fig~\ref{fig:typsem}, either
+  \begin{itemize}
+    
+  \item $u = (a \mapsto (w))$, $w \in \sem{T_1}$, 
+    and so $(a \mapsto (w)) \in \sem{S_1 \fun T_1} \cup \sem{S_2 \fun T_2}$,
+
+  \item $u = (a \mapsto (w))$, $w \in \sem{T_2}$, 
+    and so $(a \mapsto (w)) \in \sem{S_1 \fun T_1} \cup \sem{S_2 \fun T_2}$,
+
+  \item $u = ((v) \mapsto r)$, $v \in \nsem{S_1}$
+    and so $((v) \mapsto r) \in  \sem{S_1 \fun T_1} \cup \sem{S_2 \fun T_2}$,
+
+  \item $u = ((v) \mapsto r)$, $v \in \nsem{S_2}$
+    and so $((v) \mapsto r) \in \sem{S_1 \fun T_1} \cup \sem{S_2 \fun T_2}$,
+    
+  \item $u = (a \mapsto \DIVERGE)$, so $(a \mapsto \DIVERGE) \in \sem{S_1 \fun T_1} \cup \sem{S_2 \fun T_2}$, or
+    
+  \item $u = () \mapsto \CHECK$, so $(() \mapsto \CHECK) \in \sem{S_1 \fun T_1} \cup \sem{S_2 \fun T_2}$.
+
+  \end{itemize}
+  In any case, $u \in \sem{S_1 \fun T_1} \cup \sem{S_2 \fun T_2}$.
+
+  \end{enumerate}
+  This provides cases.
+\end{proof}
+
+Now, we have that the \anon{Luau} pragmatic semantic subtyping unions distinction,
+the type normal for functions is:
+\[
+  (S_1 \fun T_1) \cap \cdots \cap (S_N \fun T_N)  
+\] 
+This the most important feature of type normalization.
 
 \subsection{Type normalization}
 \label{subsec:typnorm}.
