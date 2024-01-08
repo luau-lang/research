@@ -233,8 +233,8 @@ In summary there is a trade-off in semantic subtyping:
 This paper shows how \anon{Luau} pragmatic model is defined,
 and how it supports benefits of pragmatic models.
 
-\section{Semantic subtyping for \anon{Luau}}
-\subsection{Semantic values for \anon{Luau}}
+\section{Formal Treatment of Core \anon{Luau}}
+\subsection{Semantic Values for Core \anon{Luau}}
 
 \begin{figure}
   
@@ -370,7 +370,7 @@ but they are not just allowed to return arbitrary nonsense:
 At this point we have introduced the semantic values used by the \anon{Luau} type
 system, and can turn the semantics of types, from which semantic subtyping follows.
 
-\subsection{Semantics of \anon{Luau} type}
+\subsection{Semantics of Core \anon{Luau} Types}
 
 \begin{figure}
   
@@ -459,7 +459,7 @@ Moreover there is a decision procedure for $v \in \sem{T}$ or $v \in \nsem{T}$.
   An proof by injunction on $T$, that for any $v$, either $v\in\sem{T}$ or $v\in\nsem{T}$.
 \end{proof}
 
-\subsection{Properties of semantic subtyping}
+\subsection{Properties of Semantic Subtyping}
 
 From the semantics of types as sets of semantic values,
 semantic subtyping $S <: T$ is a proof than if $v \in \sem{S}$, then
@@ -554,7 +554,7 @@ $\NUMBER? \not<: \STRING$ witnessed by $\NIL\in\sem{\NUMBER?}$ and $\NIL\in\nsem
   $(S \not<: T) \lor (T \not<: U)$.
 \end{proof}
 
-\subsection{Co- and contra-variance of subtyping for functions}
+\subsection{Co- and Contra-variance of Subtyping for Functions}
 
 We now turn to co- and contra-variant subtyping of functions.
 These come in two flavors: when function types are introduced,
@@ -612,7 +612,7 @@ In pragmatic semantic subtyping, we do not have special corner cases, in particu
 Lemma~\ref{lemma:elim-fun-variant} is true for all types,
 and does not require special cases about inhabitance.
 
-\subsection{Distribution of intersection and union over functions}
+\subsection{Distribution of Intersection and Union Over Functions}
 
 Finally, we turn to cases where intersection and union distribute
 through functions. Since \anon{Luau} uses intersections of functions as
@@ -779,9 +779,30 @@ the type normal for functions is:
 \] 
 This the most important feature of type normalization.
 
-\subsection{Type normalization}
+\subsection{Type Normalization}
 \label{subsec:typnorm}.
   
+\section{Implementation of Full \anon{Luau}}
+
+Stuff features
+\begin{itemize}
+\item Functions with arity.
+\item Functions with vararg.
+\item Tables.
+\item Tables with indexers.
+\item Tables with tagged unions.
+\item Singleton types.
+\item Genetics.
+\item FBI.
+\end{itemize}
+Stuff imp's
+\begin{itemize}
+\item How we implement type normalization.
+\item Aim for type inference in 16ms.
+\item Telemetry with very few \verb|CodeTooComplex|.
+\item SAT solves.
+\end{itemize}
+
 \section{Further work}
 
 \bibliographystyle{ACM-Reference-Format}
