@@ -230,10 +230,20 @@ In summary there is a trade-off in semantic subtyping:
 \end{itemize}
 \anon{Luau} chooses to adopt a pragmatic semantic subtyping model.
 
-This paper shows how \anon{Luau} pragmatic model is defined,
-and how it supports benefits of pragmatic models.
+This paper shows how core \anon{Luau} pragmatic model is defined,
+and how it forally (in Agda) proves pragmatic models.
+There is the in the the full \anon{Luau} which is much bigger than the formally core languade.
 
 \section{Formal Treatment of Core \anon{Luau}}
+
+This is a formal of a small core language. It has scalar types
+($\NIL$, $\NUMBER$, $\BOOLEAN$ and $\STRING$), union and intersers
+(for example the optional $T?$ is a common shothand $T \cup \NIL$),
+and single-arity fuctions.
+
+In this section why the core language can be formally, and in pariculty
+type noramlization proved a algorithm for checking subtyping.
+
 \subsection{Semantic Values for Core \anon{Luau}}
 
 \begin{figure}
