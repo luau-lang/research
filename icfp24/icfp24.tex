@@ -237,10 +237,9 @@ There is the in the the full \anon{Luau} which is much bigger than the formally 
 \section{Formal Treatment of Core \anon{Luau}}
 
 This is a formal of a small core language. It has scalar types
-($\NIL$, $\NUMBER$, $\BOOLEAN$ and $\STRING$), union and intersers
+($\NIL$, $\NUMBER$, $\BOOLEAN$ and $\STRING$), union and intersectiont types
 (for example the optional $T?$ is a common shothand $T \cup \NIL$),
-and single-arity fuctions.
-
+and single-arity fuctions (like $\NUMBER? \fun \NUMBER$).
 In this section why the core language can be formally, and in pariculty
 type noramlization proved a algorithm for checking subtyping.
 
@@ -262,31 +261,17 @@ In this presentation, we present the minimal core of \anon{Luau},
 which supports scalars and functions. This presentation ignores
 tables, mutable features, and object objects.
 We will ignore the details of scalar types,
-and assume that:
-\begin{itemize}
+and assume that there are scalar types, ranged over by $s$,
+such as $\NIL$, $\BOOLEAN$, $\NUMBER$ and $\STRING$.
 
-\item there are scalar types, ranged over by $b$,
-  such as $\NIL$, $\BOOLEAN$, $\NUMBER$ and $\STRING$,
-  
-\item there are scalar values, ranged over by $s$,
-  such as $\NIL$, $\TRUE$, $\FALSE$, numbers and string literals, and
-
-\item each scalar type $s$ has a set of scalar values $\ssem{s}$, such as:
-  \[
-    \ssem{\NIL} = \{ \NIL \} \quad
-    \ssem{\BOOLEAN} = \{ \TRUE, \FALSE \} \quad
-    \ssem{\NUMBER} = \{ 0, 1, \dots \} \quad \cdots
-  \]
-  
-\end{itemize}
 The types we are considering are:
 \[
-S, T ::= b \mid \UNKNOWN \mid \NEVER \mid S \fun T \mid S \cap T \mid S \cup T
+S, T ::= s \mid \UNKNOWN \mid \NEVER \mid S \fun T \mid S \cap T \mid S \cup T
 \]
 which are:
 \begin{itemize}
 
-\item the \emph{scalar types} $b$
+\item the \emph{scalar types} $s$
   
 \item the \emph{top type} $\UNKNOWN$,
 
@@ -385,7 +370,7 @@ system, and can turn the semantics of types, from which semantic subtyping follo
 \begin{figure}
   
 \[\begin{array}{rcl}
-  \sem{b} & = & \ssem{b} \\
+  \sem{s} & = & \{ s \} \\
   \sem{\UNKNOWN} & = & \mathcal{D} \\
   \sem{\NEVER} & = & \emptyset \\
   \sem{S \fun T} & = & \{ a \mapsto (w) \mid w \in \sem{T} \} \cup {} \\
@@ -433,7 +418,7 @@ Fig~\ref{fig:typnsem}.
 \begin{figure}
 
 \[\begin{array}{rcl}
-  \nsem{b} & = & \nssem{b} \\
+  \nsem{s} & = & \{ t \mid s \neq t \} \\
   \nsem{\UNKNOWN} & = & \emptyset \\
   \nsem{\NEVER} & = & \mathcal{D} \\
   \nsem{S \fun T} & = & \{ s \} \cup {} \\
