@@ -776,7 +776,21 @@ This the most important feature of type normalization.
 
 \subsection{Type Normalization}
 \label{subsec:typnorm}.
+
+\begin{figure}
   
+\[\begin{array}{rcl}
+  F & ::= & (S_1 \fun T_1) \cap \cdots \cap (S_m \fun T_m) \\
+  N & ::= & F \cup s_1 \cup \cdots \cup s_n
+\end{array}\]
+\caption{Normalized types}
+\label{fig:ntypes}
+
+\end{figure}
+
+For Core \anon{Luau}, type nomalization is simplifier compared than sub-theoretic semantic subtyping,
+as shown in Fig~\ref{fig:ntypes}.
+
 \section{Implementation of Full \anon{Luau}}
 
 Stuff features
