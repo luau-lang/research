@@ -21,6 +21,7 @@
 \newcommand{\BOOLEAN}{\mathtt{boolean}}
 \newcommand{\NUMBER}{\mathtt{number}}
 \newcommand{\STRING}{\mathtt{string}}
+\newcommand{\FUNCTION}{\mathtt{function}}
 \newcommand{\WARN}{\mathsf{Warn}}
 \newcommand{\DIVERGE}{\mathsf{diverge}}
 \newcommand{\CHECK}{\mathsf{check}}
@@ -809,7 +810,17 @@ the overloaded function or optional $\NUMBER$:
 \end{lemma}
 
 \begin{proof}
-   xxx
+  Cases:
+  \begin{itemize}
+  \item $\NEVER$: Is normalized function type when $m$ is zero.
+  \item $\UNKNOWN$: Not a case, since finction types.
+  \item $s$: Not a case, since scalares are not function types.
+  \item $S \fun T$: Is a normalized function type when $m$ is $1$ and $(S_1 \fun T_1)$ is $(S \fun T)$.
+  \item $S \cap T$: By indiction we have normalized function types,
+    and by definition normalized function types support intersection.
+  \item $S \cup T$: By indiction we have normalized function types,
+    and by Lemma~\ref{lem:xxx} normalized function types support union.
+  \end{itemize}
 \end{proof}
 
 \begin{lemma}
