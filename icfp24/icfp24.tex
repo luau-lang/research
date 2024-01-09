@@ -805,6 +805,16 @@ the overloaded function or optional $\NUMBER$:
   ((\STRING? \fun \NUMBER?) \cap (\NUMBER \fun \NUMBER)) \cup \NUMBER \cup \NIL
 \]
 
+\begin{lemma} \label{lem:funun}
+  For any normalized function type $F_1$ and $F_2$,
+  there is a normalized function type $F_0$,
+  where $\sem{F_1} \cup \sem{F_2}$ is $\sem{F_0}$,
+\end{lemma}
+
+\begin{proof}
+  xxx
+\end{proof}
+
 \begin{lemma}
   For any function type there is equivalent normalized function type.
 \end{lemma}
@@ -813,14 +823,13 @@ the overloaded function or optional $\NUMBER$:
   Cases:
   \begin{itemize}
   \item $\NEVER$: Is normalized function type when $m$ is zero.
-  \item $\UNKNOWN$: Not a case, since finction types.
-  \item $s$: Not a case, since scalares are not function types.
   \item $S \fun T$: Is a normalized function type when $m$ is $1$ and $(S_1 \fun T_1)$ is $(S \fun T)$.
   \item $S \cap T$: By indiction we have normalized function types,
     and by definition normalized function types support intersection.
   \item $S \cup T$: By indiction we have normalized function types,
-    and by Lemma~\ref{lem:xxx} normalized function types support union.
+    and by Lemma~\ref{lem:funun} normalized function types support union.
   \end{itemize}
+  This is an induction where the only tricky case is union, which is given by Lemma~\ref{lem:funun}.
 \end{proof}
 
 \begin{lemma}
