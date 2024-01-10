@@ -781,10 +781,10 @@ This the most important feature of type normalization.
 \begin{figure}
   
 \[\begin{array}{rcl}
-  F & ::= & (S_1 \fun T_1) \cap \cdots \cap (S_m \fun T_m) \\
+  F & ::= & \NEVER \mid (S_1 \fun T_1) \cap \cdots \cap (S_m \fun T_m) \\
   N & ::= & F \cup s_1 \cup \cdots \cup s_n
 \end{array}\]
-\caption{Normalized types (when $m=0$ we consider $F$ to be $\NEVER$)}
+\caption{Normalized function types (ranged over by $F$) and types (ranged over by $N$)}
 \label{fig:ntypes}
 
 \end{figure}
@@ -812,30 +812,53 @@ the overloaded function or optional $\NUMBER$:
 \end{lemma}
 
 \begin{proof}
-  If $F'$ is $\NEVER$ then just return $F$ is $F''$.
-  If $F''$ is $\NEVER$ then just return $F$ is $F'$.
-  Otherwise, we first distribution union through introspection:
+  If $F'$ is $\NEVER$ then just set $F$ is $F''$.
+  If $F''$ is $\NEVER$ then just set $F$ is $F'$.
+  Otherwise:
   \[
     F' = (S'_1 \fun T'_1) \cap \cdots \cap (S'_{m'} \fun T'_{m'})
   \qquad
     F'' = (S''_1 \fun T''_1) \cap \cdots \cap (S''_{m''} \fun T''_{m''})
   \]
-  to get
+  we first distribution union through introspection:
   \[
+    ((S'_1 \fun T'_1) \cap \cdots \cap (S'_{m'} \fun T'_{m'}))
+    \cup
+    ((S''_1 \fun T''_1) \cap \cdots \cap (S''_{m''} \fun T''_{m''}))
+  \]
+  to get
+  \[\begin{array}{c}
     ((S'_{1} \fun T'_{1}) \cup (S''_{1} \fun T''_{1}))
     \cap \cdots \cap
-    ((S'_{m} \fun T'_{m}) \cup (S''_{m} \fun T''_{m}))
-  \]
-  and where $m$ is $m' \times m''$.
-  Now use Lemma~\ref{lem:union-though-fun} to get:
-  \[
-    ((S'_{i} \fun T'_{i}) \cup (S''_{i} \fun T''_{i}))
-  \]
-  has the same
-  \[
-    (S'_{i} \cap S''_{i}) \fun (T'_{i}) \cup T''_{i}))
-  \]
-  as required.
+    ((S'_{1} \fun T'_{1}) \cup (S''_{m''} \fun T''_{m''}))
+    \\
+    \cap
+    \\
+    \vdots
+    \\
+    \cap
+    \\
+    ((S'_{m'} \fun T'_{m'}) \cup (S''_{1} \fun T''_{1}))
+    \cap \cdots \cap
+    ((S'_{m'} \fun T'_{m'}) \cup (S''_{m''} \fun T''_{m''}))
+  \end{array}\]
+  Now use Lemma~\ref{lem:union-though-fun} to distribute union through function:
+  \[\begin{array}{c}
+    ((S'_{1} \cap S''_{1}) \fun (T'_{1} \cup T''_{1}))
+    \cap \cdots \cap
+    ((S'_{1} \cap S''_{m''}) \fun (T'_{1} \cup T''_{m''}))
+    \\
+    \cap
+    \\
+    \vdots
+    \\
+    \cap
+    \\
+    ((S'_{m} \cap S''_{1}) \fun (T'_{m} \cup T''_{1}))
+    \cap \cdots \cap
+    ((S'_{m} \cap S''_{m''}) \fun (T'_{m} \cup T''_{m''}))
+  \end{array}\]
+  Which is a equivalent normalized function type as required.
 \end{proof}
 
 \begin{lemma}
