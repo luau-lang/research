@@ -806,31 +806,31 @@ the overloaded function or optional $\NUMBER$:
 \]
 
 \begin{lemma} \label{lem:funun}
-  For any normalized function type $F'$ and $F''$,
-  there is a normalized function type $F$,
-  where $\sem{F'} \cup \sem{F'}$ is $\sem{F}$,
+  For any normalized function type $F$ and $F'$,
+  there is one equivalent to
+  $\sem{F} \cup \sem{F'}$.
 \end{lemma}
 
 \begin{proof}
-  If $F'$ is $\NEVER$ then just set $F$ is $F''$.
-  If $F''$ is $\NEVER$ then just set $F$ is $F'$.
+  If $F$ is $\NEVER$ then $\sem{F'}$ equivalent to $\sem{F} \cup \sem{F'}$.
+  If $F'$ is $\NEVER$ then $\sem{F}$ equivalent to $\sem{F} \cup \sem{F'}$.
   Otherwise:
   \[
-    F' = (S'_1 \fun T'_1) \cap \cdots \cap (S'_{m'} \fun T'_{m'})
+    F = (S_1 \fun T_1) \cap \cdots \cap (S_{m} \fun T_{m})
   \qquad
-    F'' = (S''_1 \fun T''_1) \cap \cdots \cap (S''_{m''} \fun T''_{m''})
+    F' = (S'_1 \fun T'_1) \cap \cdots \cap (S'_{m'} \fun T'_{m'})
   \]
-  we first distribution union through introspection:
+  We first distribution union through interspect:
   \[
-    ((S'_1 \fun T'_1) \cap \cdots \cap (S'_{m'} \fun T'_{m'}))
+    ((S_1 \fun T_1) \cap \cdots \cap (S_{m} \fun T_{m}))
     \cup
-    ((S''_1 \fun T''_1) \cap \cdots \cap (S''_{m''} \fun T''_{m''}))
+    ((S'_1 \fun T'_1) \cap \cdots \cap (S'_{m'} \fun T'_{m'}))
   \]
-  to get
+  to get an equvalent non-normal type:
   \[\begin{array}{c}
-    ((S'_{1} \fun T'_{1}) \cup (S''_{1} \fun T''_{1}))
+    ((S_{1} \fun T_{1}) \cup (S'_{1} \fun T'_{1}))
     \cap \cdots \cap
-    ((S'_{1} \fun T'_{1}) \cup (S''_{m''} \fun T''_{m''}))
+    ((S_{1} \fun T_{1}) \cup (S'_{m'} \fun T'_{m'}))
     \\
     \cap
     \\
@@ -838,15 +838,15 @@ the overloaded function or optional $\NUMBER$:
     \\
     \cap
     \\
-    ((S'_{m'} \fun T'_{m'}) \cup (S''_{1} \fun T''_{1}))
+    ((S_{m} \fun T_{m}) \cup (S'_{1} \fun T'_{1}))
     \cap \cdots \cap
-    ((S'_{m'} \fun T'_{m'}) \cup (S''_{m''} \fun T''_{m''}))
+    ((S_{m} \fun T_{m}) \cup (S'_{m'} \fun T'_{m'}))
   \end{array}\]
-  Now use Lemma~\ref{lem:union-though-fun} to distribute union through function:
+  Now we use Lemma~\ref{lem:union-though-fun} to distribute union through function:
   \[\begin{array}{c}
-    ((S'_{1} \cap S''_{1}) \fun (T'_{1} \cup T''_{1}))
+    ((S_{1} \cap S'_{1}) \fun (T_{1} \cup T'_{1}))
     \cap \cdots \cap
-    ((S'_{1} \cap S''_{m''}) \fun (T'_{1} \cup T''_{m''}))
+    ((S_{1} \cap S'_{m'}) \fun (T_{1} \cup T'_{m'}))
     \\
     \cap
     \\
@@ -854,11 +854,17 @@ the overloaded function or optional $\NUMBER$:
     \\
     \cap
     \\
-    ((S'_{m} \cap S''_{1}) \fun (T'_{m} \cup T''_{1}))
+    ((S_{m} \cap S'_{1}) \fun (T_{m} \cup T'_{1}))
     \cap \cdots \cap
-    ((S'_{m} \cap S''_{m''}) \fun (T'_{m} \cup T''_{m''}))
+    ((S_{m} \cap S'_{m'}) \fun (T_{m} \cup T'_{m**}))
   \end{array}\]
-  Which is a equivalent normalized function type as required.
+  Which is a equivalent normalized function type:
+  \[
+    ((S_{1} \cap S'_{1}) \fun (T_{1} \cup T'_{1}))
+    \cap \cdots \cap
+    ((S_{m \times m'} \cap S'_{m \times m'}) \fun (T_{m \times m'} \cup T'_{m \times m'}))
+  \]
+  as required.
 \end{proof}
 
 \begin{lemma}
