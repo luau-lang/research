@@ -887,7 +887,6 @@ Note that normalizing union can result in exponential blowup.
 We discuss some heuristics methods for avoiding space in \S\ref{sec:cxxx},
 though we can't always avoid exponential blowup.
 
-
 \begin{lemma}
   For any type there is equivalent normalized type.
 \end{lemma}
@@ -906,6 +905,25 @@ though we can't always avoid exponential blowup.
   \end{itemize}
   This is an induction where the only tricky case is functions, which is given by Lamma~\ref{lem:funnord}.
 \end{proof}
+
+\subsection{Algorithm for Deciding Subtypes of Normalization Types}
+\label{subsec:algth}
+
+\begin{figure}
+  
+\[\begin{array}{rcll}
+  \SRC((S_1 \fun T_1) \cap\cdots\cap (S_m \fun T_m)) & = & S_1 \cup\cdots\cup S_m \\
+  \APP((S_1 \fun T_1) \cap\cdots\cap (S_m \fun T_m), V) & = & U_1 \cap\cdots\cap U_m &
+  \mbox{ where } U_i = \left\{ \begin{array}{@{\,}l@{\,}l}
+    T_i & \mbox{ if } V <: S_i \\
+    \UNKNOWN & \mbox{ otherwise }
+  \end{array} \right.
+\end{array}\]
+\caption{The source $\SRC(F)$
+  and the application $\APP(F, V)$ of a normalized fuction type $F$ and argument $V$}
+\label{fig:ntypes}
+
+\end{figure}
 
 \section{Implementation of Full \anon{Luau}}
 
