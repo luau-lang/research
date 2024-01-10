@@ -709,7 +709,7 @@ are functorial on both sides, but are not binary functorials.
 
 In contract, union does distribute over functions.
 
-\begin{lemma}
+\begin{lemma} \label{lem:union-though-fun}
   $\sem{(S_1 \fun T_1) \cup (S_2 \fun T_2)} =
    \sem{(S_1 \cap S_2) \fun (T_1 \cup T_2)}$
 \end{lemma}
@@ -789,7 +789,7 @@ This the most important feature of type normalization.
 
 \end{figure}
 
-For Core \anon{Luau}, type nomalization is simplifier compared than sub-theoretic semantic subtyping,
+For Core \anon{Luau}, type normalization is simplifier compared than sub-theoretic semantic subtyping,
 as shown in Fig~\ref{fig:ntypes}. A normalized function type is a overloaded function, for example:
 \[
   (\STRING? \fun \NUMBER?) \cap (\NUMBER \fun \NUMBER)
@@ -806,13 +806,36 @@ the overloaded function or optional $\NUMBER$:
 \]
 
 \begin{lemma} \label{lem:funun}
-  For any normalized function type $F_1$ and $F_2$,
-  there is a normalized function type $F_0$,
-  where $\sem{F_1} \cup \sem{F_2}$ is $\sem{F_0}$,
+  For any normalized function type $F'$ and $F''$,
+  there is a normalized function type $F$,
+  where $\sem{F'} \cup \sem{F'}$ is $\sem{F}$,
 \end{lemma}
 
 \begin{proof}
-  xxx
+  If $F'$ is $\NEVER$ then just return $F$ is $F''$.
+  If $F''$ is $\NEVER$ then just return $F$ is $F'$.
+  Otherwise, we first distribution union through introspection:
+  \[
+    F' = (S'_1 \fun T'_1) \cap \cdots \cap (S'_{m'} \fun T'_{m'})
+  \qquad
+    F'' = (S''_1 \fun T''_1) \cap \cdots \cap (S''_{m''} \fun T''_{m''})
+  \]
+  to get
+  \[
+    ((S'_{1} \fun T'_{1}) \cup (S''_{1} \fun T''_{1}))
+    \cap \cdots \cap
+    ((S'_{m} \fun T'_{m}) \cup (S''_{m} \fun T''_{m}))
+  \]
+  and where $m$ is $m' \times m''$.
+  Now use Lemma~\ref{lem:union-though-fun} to get:
+  \[
+    ((S'_{i} \fun T'_{i}) \cup (S''_{i} \fun T''_{i}))
+  \]
+  has the same
+  \[
+    (S'_{i} \cap S''_{i}) \fun (T'_{i}) \cup T''_{i}))
+  \]
+  as required.
 \end{proof}
 
 \begin{lemma}
@@ -824,9 +847,9 @@ the overloaded function or optional $\NUMBER$:
   \begin{itemize}
   \item $\NEVER$: Is normalized function type when $m$ is zero.
   \item $S \fun T$: Is a normalized function type when $m$ is $1$ and $(S_1 \fun T_1)$ is $(S \fun T)$.
-  \item $S \cap T$: By indiction we have normalized function types,
+  \item $S \cap T$: By indication we have normalized function types,
     and by definition normalized function types support intersection.
-  \item $S \cup T$: By indiction we have normalized function types,
+  \item $S \cup T$: By indication we have normalized function types,
     and by Lemma~\ref{lem:funun} normalized function types support union.
   \end{itemize}
   This is an induction where the only tricky case is union, which is given by Lemma~\ref{lem:funun}.
@@ -837,7 +860,7 @@ the overloaded function or optional $\NUMBER$:
 \end{lemma}
 
 \begin{proof}
-   xxx
+   xx
 \end{proof}
 
 \section{Implementation of Full \anon{Luau}}
