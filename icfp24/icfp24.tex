@@ -898,12 +898,12 @@ though we can't always avoid exponential blowup.
   \item $\UNKNOWN$: Is equalvent normalized type $(\NEVER \fun \UNKNOWN) \cup s_1 \cup \cdots \cup s_n$.
   \item $s$: Is a normalized type $\NEVER \cup s$.
   \item $S \fun T$: Is a normalized type.
-  \item $S \cap T$: By indication $S$ and $T$. We use Lamma~\ref{lem:funnord}
-    to normalize the function, and normalizes a union of scaler types is staightforwrd.
-  \item $S \cup T$: By indication $S$ and $T$. We use Lamma~\ref{lem:funnord}
-    to normalize the function, and normalizes a interset of scaler types is staightforwrd.
+  \item $S \cap T$: By indication $S$ and $T$. We use Lemma~\ref{lem:funnord}
+    to normalize the function, and normalizes a union of scaler types is straightforward.
+  \item $S \cup T$: By indication $S$ and $T$. We use Lemma~\ref{lem:funnord}
+    to normalize the function, and normalizes a interest of scaler types is straightforward..
   \end{itemize}
-  This is an induction where the only tricky case is functions, which is given by Lamma~\ref{lem:funnord}.
+  This is an induction where the only tricky case is functions, which is given by Lemma~\ref{lem:funnord}.
 \end{proof}
 
 \subsection{Algorithm for Deciding Subtypes of Normalization Types}
@@ -920,7 +920,7 @@ though we can't always avoid exponential blowup.
   \end{array} \right.
 \end{array}\]
 \caption{The source $\SRC(F)$
-  and the application $\APP(F, V)$ of a normalized fuction type $F$ and argument $V$}
+  and the application $\APP(F, V)$ of a normalized function type $F$ and argument $V$}
 \label{fig:ntypes}
 
 \end{figure}
@@ -930,7 +930,7 @@ We can immediately reject scalar normalize types:
 \[
   (S \fun T) \not<: (\NEVER \cup s_1 \cup\cdots\cup s_2)
 \]
-and then we have cases for functional normalize types (under a conditioal \emph{satufared} discissed later):
+and then we have cases for functional normalize types (under a conditional \emph{saturated} discussed later):
 \[\begin{array}{r@{\,}c@{\,}ll}
   (S \fun T) & \not<: & F & \mbox{ when } S \not<: \SRC(F) \\
   (S \fun T) & \not<: & F & \mbox{ when } S <: \SRC(F) \mbox{ and } \APP(F, S) \not<: T \\
