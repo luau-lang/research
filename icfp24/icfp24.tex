@@ -925,6 +925,19 @@ though we can't always avoid exponential blowup.
 
 \end{figure}
 
+Hard case is decide $S \fun T$ is a subtype of $N$.
+We can immediately reject scalar normalize types:
+\[
+  (S \fun T) \not<: (\NEVER \cup s_1 \cup\cdots\cup s_2)
+\]
+and then we have cases for functional normalize types (under a conditioal \emph{satufared} discissed later):
+\[\begin{array}{r@{\,}c@{\,}ll}
+  (S \fun T) & \not<: & F & \mbox{ when } S \not<: \SRC(F) \\
+  (S \fun T) & \not<: & F & \mbox{ when } S <: \SRC(F) \mbox{ and } \APP(F, S) \not<: T \\
+  (S \fun T) & <: & F & \mbox{ when } S <: \SRC(F) \mbox{ and } \APP(F, S) <: T
+\end{array}\]
+
+
 \section{Implementation of Full \anon{Luau}}
 
 Stuff features
