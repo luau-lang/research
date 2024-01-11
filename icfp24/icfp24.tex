@@ -906,11 +906,8 @@ though we can't always avoid exponential blowup.
   This is an induction where the only tricky case is functions, which is given by Lemma~\ref{lem:funnord}.
 \end{proof}
 
-\subsection{Saturated Normalization Types}
+\subsection{Saturated Normalization Function Types}
 \label{subsec:saturated}
-
-\subsection{Algorithm for Deciding Subtypes of Normalization Types}
-\label{subsec:algth}
 
 \begin{figure}
   
@@ -927,13 +924,72 @@ though we can't always avoid exponential blowup.
 \label{fig:ntypes}
 
 \end{figure}
+  
+The normalization function types, interact well with resolving overloads. For example:
+\[
+  F = (\NUMBER? \fun \NUMBER?) \cap (\STRING? \fun \STRING?)
+\]
+has two overloads. For example $\APP$ in Fig~\ref{fig:ntypes} gives:
+\[\begin{array}{rcl}
+  \APP(F, \NUMBER?) & = & \NUMBER? \\
+  \APP(F, \STRING?) & = & \STRING? \\
+\end{array}\]
+This even works if more than resolving overload applies, for example:
+\[\begin{array}{rcl}
+  \APP(F, \NIL) & = & \NIL
+\end{array}\]
+since:
+\[\begin{array}{rcccl}
+  \APP(F, \NIL) & = & (\NUMBER? \cap \STRING?) & = & \NIL
+\end{array}\]
+This works for interction types, but unfortunately not union types. Fon example:
+\[\begin{array}{rcl}
+  \APP(F, \NUMBER \cup \STRING) & \mbox{should be} & \NUMBER? \cup\STRING?
+\end{array}\]
+but unfortuntuely $\APP$ in Fig~\ref{fig:ntypes} will return $\UNKNOWN$.
 
-Hard case is decide $S \fun T$ is a subtype of $N$.
+\begin{figure}
+  
+\[\begin{array}{l}
+  (S_1 \fun T_1) \cap\cdots\cap (S_m \fun T_m) \\\quad
+  \mbox{is saturated whenever} \\\qquad
+  \forall i, j \st
+    \exists k \st
+      (S_i <: S_k) \land
+      (S_j <: S_k) \land
+      (T_i <: T_k) \land
+      (T_j <: T_k)
+\end{array}\]
+\caption{A saturated normalized function type}
+\label{fig:satutypes}
+
+\end{figure}
+
+We consider the cases which for resolving overload the \emph{saturated}
+normalized function types in Fig~\ref{fig:satutypes}. For example $F$
+is not saturated there are overloads:
+\[
+  S_i = \NUMBER? \quad
+  S_j = \STRING? \quad
+  T_i = \NUMBER? \quad
+  T_j = \STRING? \quad
+\]
+but there is no appropriate $k$. Fortunately, we can extend $F$
+to a have an extra overload, to be saturated:
+\[\begin{array}{l}
+  (\NUMBER? \fun \NUMBER?) \cap (\STRING? \fun \STRING?) \\{}\quad
+   \cap ((\NUMBER? \cup \STRING?) \fun (\NUMBER? \cup \STRING?))
+\end{array}\]
+
+\subsection{Algorithm for Deciding Subtypes of Normalization Types}
+\label{subsec:algth}
+
+The hard case is decide $S \fun T$ is a subtype of $N$.
 We can immediately reject scalar normalize types:
 \[
   (S \fun T) \not<: (\NEVER \cup s_1 \cup\cdots\cup s_2)
 \]
-and then we have cases for functional normalize types (under a conditional \emph{saturated} discussed later):
+and then we have cases for saturated functional normalize types:
 \[\begin{array}{r@{\,}c@{\,}ll}
   (S \fun T) & \not<: & F & \mbox{ when } S \not<: \SRC(F) \\
   (S \fun T) & \not<: & F & \mbox{ when } S <: \SRC(F) \mbox{ and } \APP(F, S) \not<: T \\
