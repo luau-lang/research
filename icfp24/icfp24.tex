@@ -980,6 +980,39 @@ to a have an extra overload, to be saturated:
   (\NUMBER? \fun \NUMBER?) \cap (\STRING? \fun \STRING?) \\{}\quad
    \cap ((\NUMBER? \cup \STRING?) \fun (\NUMBER? \cup \STRING?))
 \end{array}\]
+for which $k$ is chosen:
+\[
+  S_k = (\NUMBER? \cup \STRING?) \quad
+  T_k = (\NUMBER? \cup \STRING?)
+\]
+The saturated equivalent has the right resolving overload:
+\[\begin{array}{rcl}
+  \APP(F, \NUMBER \cup \STRING) & = & \NUMBER? \cup\STRING?
+\end{array}\]
+There are two important results about saturated types.
+The first important results is every normalized function type can be converted to a equivalent saturated type.
+
+\begin{lemma}
+  For any normalized function type there is equivalent saturated type.
+\end{lemma}
+
+\begin{proof}
+  xxxx
+\end{proof}
+
+The second important results is a test for $F <: (S \fun T)$ whenever $F$ is saturated.
+
+\begin{lemma}
+  For any saturated $F$,
+  $S <: \SRC(F)$
+  and $\APP(F, S) <: T$
+  if and only if
+  $F <: (S \fun T)$.
+\end{lemma}
+
+\begin{proof}
+  xxxx
+\end{proof}
 
 \subsection{Algorithm for Deciding Subtypes of Normalization Types}
 \label{subsec:algth}
