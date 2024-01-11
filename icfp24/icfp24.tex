@@ -921,7 +921,7 @@ though we can't always avoid exponential blowup.
 \end{array}\]
 \caption{The source $\SRC(F)$
   and the application $\APP(F, V)$ of a normalized function type $F$ and argument $V$}
-\label{fig:ntypes}
+vv\label{fig:ntypes}
 
 \end{figure}
   
@@ -974,13 +974,13 @@ is not saturated there are overloads:
   T_i = \NUMBER? \quad
   T_j = \STRING? \quad
 \]
-but there is no appropriate $k$. Fortunately, we can extend $F$
+vvbut there is no appropriate $k$. Fortunately, we can extend $F$
 to a have an extra overload, to be saturated:
 \[\begin{array}{l}
   (\NUMBER? \fun \NUMBER?) \cap (\STRING? \fun \STRING?) \\{}\quad
    \cap ((\NUMBER? \cup \STRING?) \fun (\NUMBER? \cup \STRING?))
 \end{array}\]
-for which $k$ is chosen:
+vfor which $k$ is chosen:
 \[
   S_k = (\NUMBER? \cup \STRING?) \quad
   T_k = (\NUMBER? \cup \STRING?)
@@ -997,7 +997,31 @@ The first important results is every normalized function type can be converted t
 \end{lemma}
 
 \begin{proof}
-  xxxx
+  Assume normalized function type:
+  \[
+    F = (S_1 \fun T_1) \cap \cdots \cap (S_{m} \fun T_{m})
+  \]
+  Let $n$ be $2^m$ as the powerset of $1..m$.
+  The extenson of $F$ has:
+  \[
+    (S_{i+j} \fun T_{i+j})
+      = ((S_{i} \cup S_{j}) \fun (T_{i} \cup T_{j}))
+  \]
+  To check that is saturared, for $i$ and $j$, then pick $k = i+j$
+  from which is direct that:
+  \[
+      (S_i <: S_k) \land
+      (S_j <: S_k) \land
+      (T_i <: T_k) \land
+      (T_j <: T_k)
+  \]
+  To get the extension is equivalent, we use~\ref{lem:??}:
+  \[
+    ((S_1 \cup S_2) \fun (T_1 \cup T_2))
+    <:
+    ((S_1 \fun T_1) \cap (S_2 \fun T_2))
+  \]
+  as required.
 \end{proof}
 
 The second important results is a test for $F <: (S \fun T)$ whenever $F$ is saturated.
