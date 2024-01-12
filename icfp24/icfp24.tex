@@ -1122,7 +1122,35 @@ We now have an algorithm for deciding subtypig.
   \item comparing $(S_1 \cap S_2)$ and $T$.
 
   \end{itemize}
-  
+  Cases:
+  \begin{itemize}
+
+  \item compaing $N$ and $\NEVER$:
+   \begin{itemize}
+    \item if $N$ is $F \cup s_1 \cup\cdots\cup s_n$, then $N \not<: \NEVER$, and
+    \item if $N$ is $\NEVER$, then $N <: \NEVER$.
+   \end{itemize}
+
+  \item compaing $\UNKNOWN$ and $N$
+   \begin{itemize}
+   \item if $N$ is $\NEVER$, then $\UNKNOWN \not<: N$,
+   \item if $N$ is $F \cup s_1 \cup\cdots\cup s_n$, and there is missing $s$ then $\UNKNOWN \not<: N$,
+   \item if $N$ is $F \cup s_1 \cup\cdots\cup s_n$, and $F \not<: \FUNCTION$ then $\UNKNOWN \not<: N$, and
+   \item if $N$ is $F \cup s_1 \cup\cdots\cup s_n$, and $F <: \FUNCTION$ and ever scalar
+     mentioned then $\UNKNOWN <: N$..
+   \end{itemize}
+
+  \item compaing scalar $s$ and $N$
+   \begin{itemize}
+   \item if $N$ is $\NEVER$, then $s \not<: N$,
+   \item if $N$ is $F \cup s_1 \cup\cdots\cup s_n$, and there no $s_i = s$, then $s \not<: N$, and
+   \item if $N$ is $F \cup s_1 \cup\cdots\cup s_n$, and there is $s_i = s$, then $s <: N$.
+   \end{itemize}
+
+  \item compaing $N$ and $(S \fun T)$
+    we use the previous result.
+  \end{itemize}
+  as required.
 \end{proof}
 
 
