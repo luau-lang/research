@@ -973,7 +973,7 @@ is not saturated there are overloads:
   S_i = \NUMBER? \quad
   S_j = \STRING? \quad
   T_i = \NUMBER? \quad
-  T_j = \STRING? \quad
+  T_j = \STRING?
 \]
 but there is no appropriate $k$. Fortunately, we can extend $F$
 to a have an extra overload, to be saturated:
@@ -1035,8 +1035,30 @@ The second important results is a test for $F <: (S \fun T)$ whenever $F$ is sat
   $F <: (S \fun T)$.
 \end{lemma}
 
-\begin{proof}
-  xxxx
+\begin{proof}\mbox{}
+  Since $F$ is saturated,
+  there is a overload $F <: (S_i \fun T_i)$ where $S <: S_i$
+  and $T_i <: T$.
+  \begin{itemize}
+
+  \item[($\Rightarrow$)]
+    We hypothesis
+    $F <: (S \fun T)$.
+    Lemma~\ref{lemma:elim-fun-variant} $S <: S_i$ and $T_i <: T$
+    and so by transivity
+    $S <: \SRC(F)$
+    and $\APP(F, S) <: T$
+    
+  \item[($\Leftarrow$)] 
+    We hypothesis
+    $S <: \SRC(F)$ and
+    $\APP(F) <: T$.
+    By Lemma~\ref{lemma:intro-fun-variant} $(S_i \fun T_i) <: (S \fun T)$
+    and so by transivity $F <: (S \fun T)$.
+
+  \end{itemize}
+  Note Lemma~\ref{lemma:elim-fun-variant}
+  depends on pragmatic semantic subtyping.
 \end{proof}
 
 \subsection{Algorithm for Deciding Subtypes of Normalization Types}
@@ -1083,7 +1105,7 @@ Stuff imp's
 \section{Powerset for Finite Sets}
 \label{app:powerser}
 
-A recap of standard exponenting on finite sets.
+A remap of standard exponenting on finite sets.
 
 We assume a universe $U$.
 Let $A \subseteq U$ be a finite set, where $a_i \in U$.
