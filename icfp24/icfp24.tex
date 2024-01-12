@@ -1064,17 +1064,66 @@ The second important results is a test for $F <: (S \fun T)$ whenever $F$ is sat
 \subsection{Algorithm for Deciding Subtypes of Normalization Types}
 \label{subsec:algth}
 
-The hard case is decide $S \fun T$ is a subtype of $N$.
-We can immediately reject scalar normalize types:
-\[
-  (S \fun T) \not<: (\NEVER \cup s_1 \cup\cdots\cup s_2)
-\]
-and then we have cases for saturated functional normalize types:
-\[\begin{array}{r@{\,}c@{\,}ll}
-  (S \fun T) & \not<: & F & \mbox{ when } S \not<: \SRC(F) \\
-  (S \fun T) & \not<: & F & \mbox{ when } S <: \SRC(F) \mbox{ and } \APP(F, S) \not<: T \\
-  (S \fun T) & <: & F & \mbox{ when } S <: \SRC(F) \mbox{ and } \APP(F, S) <: T
-\end{array}\]
+We now have an algorithm for deciding subtypig.
+
+\begin{theorem}
+  We have decision for subtyping.
+\end{theorem}
+
+\begin{proof}
+  We prove by induction on the depth of types,
+  which means that $(S \fun T') <: (S' \fun T)$ can use $S <: S'$ and $T <: T'$ by induction.
+
+  Cases:
+  \begin{itemize}
+
+  \item $\NEVER <: T$.
+
+  \item $S \not<: \NEVER$ when $S$ is a fuction or scalar. 
+
+  \item $S <: \UNKNOWN$.
+
+  \item $\UNKNOWN \not<: T$ when $T$ is a fuction or scalar. 
+  
+  \item for scalars $s$ and $t$, if $s = t$ then $s <: t$ otherwise $s \not<: t$.
+
+  \item for scalar $s$ and functions $(S \fun T)$, $s \not<: (S \fun T)$ and 
+     $(S \fun T) \not<: s$.
+
+  \item for functions $(S_1 \fun T_1)$ and $(S_2 \fun T_2)$
+    \begin{itemize}
+    \item if $S_2 \not<: S_1$ then $(S_1 \fun T_1) \not<: (S_2 \fun T_2)$,
+    \item if $T_1 \not<: T_2$ then $(S_1 \fun T_1) \not<: (S_2 \fun T_2)$, and
+    \item if $S_2 <: S_1$ and $T_1 <: T_2$ then $(S_1 \fun T_1) <: (S_2 \fun T_2)$.
+   \end{itemize}
+    
+  \item comparing $S$ and $(T_1 \cap T_2)$:
+    \begin{itemize}
+    \item if $S \not<: T_1$ then $S \not<: (T_1 \cap T_2)$,
+    \item if $S \not<: T_2$ then $S \not<: (T_1 \cap T_2)$, and
+    \item if $S <: T_1$ and $S <: T_2$ then $S <: (T_1 \cap T_2)$.
+    \end{itemize}
+
+  \item comparing $(S_1 \cup S_2)$ and $T$ as:
+    \begin{itemize}
+    \item if $S_1 \not<: T$ then $(S_1 \cup S_2) \not<: T$,
+    \item if $S_2 \not<: T$ then $(S_1 \cup S_2) \not<: T$, and
+    \item if $S_1 <: T$ and $S_2 <: T$ then $(S_1 \cup S_2) <: T$.
+    \end{itemize}
+
+  \end{itemize}
+  Those are the cases, but this cases leaves where normaized cases,
+  and saturated types for fuctions.
+  The cases where normalization is used:
+  \begin{itemize}
+
+  \item comparing $S$ and $(T_1 \cup T_2)$, and
+
+  \item comparing $(S_1 \cap S_2)$ and $T$.
+
+  \end{itemize}
+  
+\end{proof}
 
 
 \section{Implementation of Full \anon{Luau}}
