@@ -820,13 +820,13 @@ the overloaded function or optional $\NUMBER$:
   \qquad
     F' = (S'_1 \fun T'_1) \cap \cdots \cap (S'_{m'} \fun T'_{m'})
   \]
-  We first distribution union through interspect:
+  We first distribution union through intersect:
   \[
     ((S_1 \fun T_1) \cap \cdots \cap (S_{m} \fun T_{m}))
     \cup
     ((S'_1 \fun T'_1) \cap \cdots \cap (S'_{m'} \fun T'_{m'}))
   \]
-  to get an equvalent non-normal type:
+  to get an equivalent non-normal type:
   \[\begin{array}{c}
     ((S_{1} \fun T_{1}) \cup (S'_{1} \fun T'_{1}))
     \cap \cdots \cap
@@ -895,7 +895,7 @@ though we can't always avoid exponential blowup.
   Cases:
   \begin{itemize}
   \item $\NEVER$: Is normalized type.
-  \item $\UNKNOWN$: Is equalvent normalized type $(\NEVER \fun \UNKNOWN) \cup s_1 \cup \cdots \cup s_n$.
+  \item $\UNKNOWN$: Is equivalent normalized type $(\NEVER \fun \UNKNOWN) \cup s_1 \cup \cdots \cup s_n$.
   \item $s$: Is a normalized type $\NEVER \cup s$.
   \item $S \fun T$: Is a normalized type.
   \item $S \cap T$: By indication $S$ and $T$. We use Lemma~\ref{lem:funnord}
@@ -921,7 +921,7 @@ though we can't always avoid exponential blowup.
 \end{array}\]
 \caption{The source $\SRC(F)$
   and the application $\APP(F, V)$ of a normalized function type $F$ and argument $V$}
-vv\label{fig:ntypes}
+\label{fig:ntypes}
 
 \end{figure}
   
@@ -942,11 +942,11 @@ since:
 \[\begin{array}{rcccl}
   \APP(F, \NIL) & = & (\NUMBER? \cap \STRING?) & = & \NIL
 \end{array}\]
-This works for interction types, but unfortunately not union types. Fon example:
+This works for intersection types, but unfortunately not union types. For example:
 \[\begin{array}{rcl}
   \APP(F, \NUMBER \cup \STRING) & \mbox{should be} & \NUMBER? \cup\STRING?
 \end{array}\]
-but unfortuntuely $\APP$ in Fig~\ref{fig:ntypes} will return $\UNKNOWN$.
+but unfortunately $\APP$ in Fig~\ref{fig:ntypes} will return $\UNKNOWN$.
 
 \begin{figure}
   
@@ -974,13 +974,13 @@ is not saturated there are overloads:
   T_i = \NUMBER? \quad
   T_j = \STRING? \quad
 \]
-vvbut there is no appropriate $k$. Fortunately, we can extend $F$
+but there is no appropriate $k$. Fortunately, we can extend $F$
 to a have an extra overload, to be saturated:
 \[\begin{array}{l}
   (\NUMBER? \fun \NUMBER?) \cap (\STRING? \fun \STRING?) \\{}\quad
    \cap ((\NUMBER? \cup \STRING?) \fun (\NUMBER? \cup \STRING?))
 \end{array}\]
-vfor which $k$ is chosen:
+for which $k$ is chosen:
 \[
   S_k = (\NUMBER? \cup \STRING?) \quad
   T_k = (\NUMBER? \cup \STRING?)
@@ -1002,12 +1002,12 @@ The first important results is every normalized function type can be converted t
     F = (S_1 \fun T_1) \cap \cdots \cap (S_{m} \fun T_{m})
   \]
   Let $n$ be $2^m$ as the powerset of $1..m$.
-  The extenson of $F$ has:
+  The extension of $F$ has:
   \[
     (S_{i+j} \fun T_{i+j})
       = ((S_{i} \cup S_{j}) \fun (T_{i} \cup T_{j}))
   \]
-  To check that is saturared, for $i$ and $j$, then pick $k = i+j$
+  To check that is saturated, for $i$ and $j$, then pick $k = i+j$
   from which is direct that:
   \[
       (S_i <: S_k) \land
