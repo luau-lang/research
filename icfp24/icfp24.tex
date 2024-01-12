@@ -1002,13 +1002,13 @@ The first important results is every normalized function type can be converted t
   \[
     F = (S_1 \fun T_1) \cap \cdots \cap (S_{m} \fun T_{m})
   \]
-  Let $n$ be $2^m$ as the powerset of $1..m$.
-  The extension of $F$ has:
+  Let $n$ be $2^m$ as the powerset of $1..m$, as in Appendix~\ref{app:powerser}.
+  We fold over the powerset as:
   \[
     (S_{i+j} \fun T_{i+j})
       = ((S_{i} \cup S_{j}) \fun (T_{i} \cup T_{j}))
   \]
-  To check that is saturated, for $i$ and $j$, then pick $k = i+j$
+  To check that is saturated, for $i$ and $j$, then pick $k = i \boxplus j$
   from which is direct that:
   \[
       (S_i <: S_k) \land
@@ -1077,6 +1077,56 @@ Stuff imp's
 \end{itemize}
 
 \section{Further work}
+
+\appendix
+
+\section{Powerset for Finite Sets}
+\label{app:powerser}
+
+A recap of standard exponenting on finite sets.
+
+We assume a universe $U$.
+Let $A \subseteq U$ be a finite set, where $a_i \in U$.
+\[
+  A = \{ a_1, \dots, a_n \}
+\]
+The exponential nonempty powerset $\mathcal{P}(A) \subset \mathcal{P}(U)$,
+where $b_i \in \mathcal{P}(U)$;
+\[
+  \mathcal{P}(A) = \{ b_1, \dots, b_{2^n} \}
+\]
+We define $b_i$ as:
+\begin{itemize}
+\item if $i = 2^j$ then $b_i = \{ a_j \}$, and
+\item if $i = j + 2^k$ where $j < 2^k$,
+  then $b_i = b_j \cup \{ a_k \}$.
+\end{itemize}
+A common case is a fold over $(c_i \oplus c_j)$ where $c_i \in U$, $c_j \in U$, and
+$c_i \oplus c_j \in U$:
+\begin{itemize}
+\item if $i = 2^j$ then $b_i = a_j$, and
+\item if $i = j + 2^k$ where $j < 2^k$,
+  then $b_i = b_j \oplus a_k$.
+\end{itemize}
+Another common case is where $i$ and $j$ exists,
+and find $(i \boxplus j)$ where:
+\[
+  b_i \cup b_j = b_{i \boxplus j}
+\]
+We define $(i \boxplus j)$ as:
+\begin{itemize}
+\item if $i = 0$ then $(i \boxplus j)$ is $j$,
+\item if $j = 0$ then $(i \boxplus j)$ is $i$,
+\item if $i = i' + 2^k$ and $j = j' + 2^k$
+  then $(i \boxplus j)$ is $(i' \boxplus j') + 2^k$,
+\item if $i = i' + 2^k$ and $j < 2^k$
+  then $(i \boxplus j)$ is $(i' \boxplus j) + 2^k$, and
+\item if $i < 2^k$n and $j = j' + 2^k$
+  then $(i \boxplus j)$ is $(i \boxplus j') + 2^k$.
+\end{itemize}
+These allow us to unions of exponential nonempty powerset,
+while treat using indexes.
+
 
 \bibliographystyle{ACM-Reference-Format}
 \bibliography{bibliography}
