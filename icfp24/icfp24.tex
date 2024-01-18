@@ -670,7 +670,7 @@ are functorial on both sides, but are not binary functorials.
   \item $u = (a \mapsto (w))$ and $w \in \sem{T}$, 
     and so $(a \mapsto (w)) \in \sem{S_1 \fun T} \cap \sem{S_2 \fun T}$,
   \item $u = ((v) \mapsto r)$, $v \in \nsem{S_1} \cap \nsem{S_2}$
-    and so $((v) \mapsto r) \in \sem{S_1 \fun T} \cap \sem{S_2 \fun T}$,,
+    and so $((v) \mapsto r) \in \sem{S_1 \fun T} \cap \sem{S_2 \fun T}$,
   \item $u = (a \mapsto \DIVERGE)$, so $(a \mapsto \DIVERGE) \in \sem{S_1 \fun T} \cap \sem{S_2 \fun T}$, or
   \item $u = () \mapsto \CHECK$, so $(() \mapsto \CHECK) \in \sem{S_1 \fun T} \cap \sem{S_2 \fun T}$.
   \end{itemize}
@@ -1079,11 +1079,11 @@ We now have an algorithm for deciding subtypig.
 
   \item $\NEVER <: T$.
 
-  \item $S \not<: \NEVER$ when $S$ is a fuction or scalar. 
+  \item $S \not<: \NEVER$ when $S$ is a function or scalar.
 
   \item $S <: \UNKNOWN$.
 
-  \item $\UNKNOWN \not<: T$ when $T$ is a fuction or scalar. 
+  \item $\UNKNOWN \not<: T$ when $T$ is a function or scalar.
   
   \item for scalars $s$ and $t$, if $s = t$ then $s <: t$ otherwise $s \not<: t$.
 
@@ -1164,8 +1164,8 @@ Stuff features
 \item Tables with indexers.
 \item Tables with tagged unions.
 \item Singleton types.
-\item Genetics.
-\item FBI.
+\item Generics.
+\item FFI.
 \end{itemize}
 Stuff imp's
 \begin{itemize}
@@ -1174,6 +1174,125 @@ Stuff imp's
 \item Telemetry with very few \verb|CodeTooComplex|.
 \item SAT solves.
 \end{itemize}
+
+\subsection{Function features: Oversaturation}
+
+Roblox offers a rich API for users to customize their experiences.  Many of these APIs involve callbacks.  A very simple example is that a developer can register a callback to be invoked when one 3D object comes into physical contact with another
+
+\begin{verbatim}
+part.Touched:Connect(function(other)
+    print('This part was touched by ' .. other.Name)
+end)
+\end{verbatim}
+
+It is occasionally the case that this callback does not actually need all of the data passed to it.  It is customary for the developer to simply omit the parameter:
+
+\begin{verbatim}
+part.Touched:Connect(function()
+    print('This part was touched')
+end)
+\end{verbatim}
+
+The Roblox engine will at runtime oversaturate this function by passing it more arguments than it is designed to accept.  This is perfectly safe to do but presents some challenges to type inference.
+
+It is tempting to introduce a subtyping rule between functions of mismatched arities (eg $() \rightarrow () <: <T>(T) \rightarrow ()$), but this leads to soundness issues:
+
+\begin{verbatim}
+function print_string(x: string?)
+    if x then
+        print(string.lower(x))
+    end
+end
+
+local a: () -> () = print_string
+
+a(5) -- oversaturation is safe, right?
+\end{verbatim}
+
+Instead, we observe that it is safe to oversaturate a value whose type is inferred from a function statement or expression.  The only functions that are unsafe to oversaturate are the ones whose definitions we do not exactly know.
+
+The simplest way to model a function that is safe to oversaturate is to consider it to be a variadic function that accepts any number of additional arguments of any types.  We use the syntax $...unknown$ to indicate 0 or more values of type $unknown$.
+
+In the example above, we infer $print_string : (string?, ...unknown) \rightarrow ()$.
+
+\subsection{Function features: Undersaturation}
+
+In Luau, as in Lua, a function can also be called with fewer arguments than it has parameters.  At runtime, this has same effect as passing $nil$ for those extra parameters.
+
+A very common practice is to use this mechanism to effect optional parameters.
+
+\begin{verbatim}
+function f(x)
+    if  ~= nil then
+        print()
+    end
+end
+
+f(0, true) -- Prints "true"
+f(0, nil)  -- Does not print anything
+f(0)       -- Same as f(nil)
+\end{verbatim}
+
+Luau considers an argument to be optional if its type is a subtype of $nil$.  For instance, $f$ above could be explicitly annotated like so:
+
+\begin{verbatim}
+function f<T>(x: T, y: boolean?): T
+\end{verbatim}
+
+Modelling this in the type system is a challenge.  Doing so via a subtyping relation a la $(T?) -> () <: () -> ()$ creates a soundness problem:
+
+TODO remember what the issue was here!
+
+\subsection{Function features: variadic functions}
+
+We have already established that any function whose definition we exactly know is safe to oversaturate with any number of arguments of any types, and we have established that, via use of higher order functions and function aliasing, some functions are not safe to oversaturate, so it follows that there must be some subtyping relationship between variadic functions and fixed-arity functions.  Without this, fixed-arity functions could not be used at all.
+
+\begin{verbatim}
+function apply_five(cb: (number) -> ())
+    cb(5)
+end
+
+apply_five(function() end)
+\end{verbatim}
+
+Luau models functions as maps from one \textit{type pack} to another.  A type pack is an ordered set of 0 or more types.  Like types, type packs can be concrete or generic.  They can also be finite or infinite.
+
+Subtype relations between finite type packs is simple and obvious: A type pack $\overline{T}$ is a subtype of another $\overline{U}$ if each type in $\overline{T}$ is a subtype of the corresponding type from $\overline{U}$.  There is no subtyping relation at all between finite packs of inequal length.
+
+Function subtyping is standard except that we do a subtype test between type packs.
+
+Luau does not directly support unions of type packs, but it is nevertheless very convenient to think about a variadic type pack as an infinite union of finite packs.  If the pack $ \overline{T} $ is equal to $...T$ (that is, 0 or more $T$s), then
+
+$$
+\overline{T} = () \space | \space (T) \space | \space (T, T) \space | \space (T, T, T) \space | \space ...
+$$
+
+And if we reapply the standard rule for subtyping of unions
+
+$$
+\cfrac
+{\overline{T} <: \overline{A} \space or \space \overline{T} <: \overline{B}}
+{\overline{T} <: \overline{A} \space | \space \overline{B}}
+$$
+
+We can then continue to use the standard subtyping rule for functions:
+
+$$
+\cfrac
+{\overline{C} <: \overline{A}, \overline{B} <: \overline{D}}
+{\overline{A} \rightarrow \overline{B} <: \overline{C} \rightarrow \overline{D}}
+$$
+
+And we have an easy way to reason about tests like the following:
+
+$$
+\begin{aligned}
+(A, B, ...C) \rightarrow () &<: (D, E) \rightarrow () \\
+(D, E) &<: (A, B, ...C) \\
+(D, E) &<: (A, B) \space | \space (A, B, C) \space | \space (A, B, C, C) \space | \space (A, B, C, C, C) \space | \space ... \\
+D <: A \space &and \space E <: B
+\end{aligned}
+$$
 
 \section{Further work}
 
