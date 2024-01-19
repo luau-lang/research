@@ -1215,49 +1215,13 @@ The simplest way to model a function that is safe to oversaturate is to consider
 
 In the example above, we infer $print_string : (string?, ...unknown) \rightarrow ()$.
 
-\subsection{Function features: Undersaturation}
-
-In Luau, as in Lua, a function can also be called with fewer arguments than it has parameters.  At runtime, this has same effect as passing $nil$ for those extra parameters.
-
-A very common practice is to use this mechanism to effect optional parameters.
-
-\begin{verbatim}
-function f(x)
-    if  ~= nil then
-        print()
-    end
-end
-
-f(0, true) -- Prints "true"
-f(0, nil)  -- Does not print anything
-f(0)       -- Same as f(nil)
-\end{verbatim}
-
-Luau considers an argument to be optional if its type is a subtype of $nil$.  For instance, $f$ above could be explicitly annotated like so:
-
-\begin{verbatim}
-function f<T>(x: T, y: boolean?): T
-\end{verbatim}
-
-Modelling this in the type system is a challenge.  Doing so via a subtyping relation a la $(T?) -> () <: () -> ()$ creates a soundness problem:
-
-TODO remember what the issue was here!
-
 \subsection{Function features: variadic functions}
 
 We have already established that any function whose definition we exactly know is safe to oversaturate with any number of arguments of any types, and we have established that, via use of higher order functions and function aliasing, some functions are not safe to oversaturate, so it follows that there must be some subtyping relationship between variadic functions and fixed-arity functions.  Without this, fixed-arity functions could not be used at all.
 
-\begin{verbatim}
-function apply_five(cb: (number) -> ())
-    cb(5)
-end
-
-apply_five(function() end)
-\end{verbatim}
-
 Luau models functions as maps from one \textit{type pack} to another.  A type pack is an ordered set of 0 or more types.  Like types, type packs can be concrete or generic.  They can also be finite or infinite.
 
-Subtype relations between finite type packs is simple and obvious: A type pack $\overline{T}$ is a subtype of another $\overline{U}$ if each type in $\overline{T}$ is a subtype of the corresponding type from $\overline{U}$.  There is no subtyping relation at all between finite packs of inequal length.
+Subtype relations between finite type packs is simple and obvious: A type pack $\overline{T}$ is a subtype of another $\overline{U}$ if their lengths are exactly equal and if each type in $\overline{T}$ is a subtype of the corresponding type from $\overline{U}$.  There is no subtyping relation at all between finite packs of inequal length.
 
 Function subtyping is standard except that we do a subtype test between type packs.
 
@@ -1283,7 +1247,7 @@ $$
 {\overline{A} \rightarrow \overline{B} <: \overline{C} \rightarrow \overline{D}}
 $$
 
-And we have an easy way to reason about tests like the following:
+And easily reason about tests like the following:
 
 $$
 \begin{aligned}
